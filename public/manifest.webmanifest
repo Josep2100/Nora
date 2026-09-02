@@ -1,0 +1,32 @@
+{
+  "name": "Nora | Tu Asistente Personal",
+  "short_name": "Nora",
+  "description": "Nora - Tu asistente personal inteligente para recordatorios, memoria de objetos, lista de la compra y organización con voz e IA.",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#100a1c",
+  "theme_color": "#100a1c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "lifestyle", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Hablar con Nora",
+      "url": "/?action=voice",
+      "description": "Dictar un recordatorio o buscar un objeto con Nora"
+    },
+    {
+      "name": "Podcast Mañanero",
+      "url": "/?action=podcast",
+      "description": "Escuchar el resumen del día de Nora"
+    }
+  ]
+}

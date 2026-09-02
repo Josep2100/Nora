@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#100a1c" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Nora" />
+    <meta name="application-name" content="Nora Tu Asistente Personal" />
+    <meta name="description" content="Nora - Tu Asistente Personal con Inteligencia Artificial, Control por Voz, Baúl de Memoria y Organización Diaria." />
+    
+    <title>Nora | Tu Asistente Personal</title>
+    
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- PWA Install Banner -->
+    <div id="pwaBanner" class="pwa-banner hidden">
+      <div class="pwa-banner-content">
+        <img src="/icon.svg" alt="Nora Icon" class="pwa-mini-icon" />
+        <div>
+          <strong>Instalar Nora</strong>
+          <p>Úsala como una app nativa en tu móvil o PC</p>
+        </div>
+      </div>
+      <div class="pwa-banner-actions">
+        <button id="installPwaBtn" class="pwa-install-btn" type="button">Instalar</button>
+        <button id="dismissPwaBtn" class="pwa-dismiss-btn" type="button">✕</button>
+      </div>
+    </div>
+
+    <!-- Drawer Overlay for Mobile -->
+    <div id="drawerOverlay" class="drawer-overlay hidden"></div>
+
+    <!-- AUTHENTICATION SCREEN -->
+    <div id="authScreen" class="auth-screen">
+      <div class="auth-card">
+        <div class="brand-box">
+          <div class="brand-mark">
+            <span>N</span>
+            <div class="sparkle-dot"></div>
+          </div>
+          <div>
+            <h1>Nora</h1>
+            <p>Tu asistente personal</p>
+          </div>
+        </div>
+
+        <div class="auth-tabs">
+          <button id="showLogin" class="tab active" type="button">Iniciar sesión</button>
+          <button id="showRegister" class="tab" type="button">Registrarse</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form id="loginForm" class="auth-form">
+          <label>
+            <span>Correo electrónico</span>
+            <input type="email" id="loginEmail" placeholder="tu@correo.com" required autocomplete="email" />
+          </label>
+          <label>
+            <span>Contraseña</span>
+            <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password" />
+          </label>
+          <button type="submit" class="submit-btn">Entrar con Nora</button>
+        </form>
+
+        <!-- SIGNUP FORM CON REQUISITOS ESTRICTOS DE SEGURIDAD -->
+        <form id="signupForm" class="auth-form hidden">
+          <label>
+            <span>Nombre completo</span>
+            <input type="text" id="signupName" placeholder="¿Cómo te llamas?" required autocomplete="name" />
+          </label>
+          <label>
+            <span>Correo electrónico</span>
+            <input type="email" id="signupEmail" placeholder="tu@correo.com" required autocomplete="email" />
+          </label>
+          <label>
+            <span>Contraseña segura</span>
+            <input type="password" id="signupPassword" placeholder="Crea una contraseña segura" required autocomplete="new-password" />
+          </label>
+          <label class="consent-row">
+            <input type="checkbox" id="privacyConsent" required />
+            <span>Acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a> y el tratamiento de mis datos para usar Nora.</span>
+          </label>
+
+          <!-- 🔒 Medidor y Checklist de Requisitos de Contraseña -->
+          <div class="password-meter-box">
+            <div class="password-meter-bar">
+              <div id="passwordMeterFill" class="meter-fill"></div>
+            </div>
+            <span id="passwordMeterLabel" class="meter-label">Introduce una contraseña segura</span>
+            
+            <ul class="pwd-requirements">
+              <li id="reqLength" class="req-item"><span class="req-icon">○</span> Mínimo 8 caracteres</li>
+              <li id="reqUpper" class="req-item"><span class="req-icon">○</span> Al menos 1 mayúscula (A-Z)</li>
+              <li id="reqNumber" class="req-item"><span class="req-icon">○</span> Al menos 1 número (0-9)</li>
+              <li id="reqSpecial" class="req-item"><span class="req-icon">○</span> 1 carácter especial (@, $, !, %, #...)</li>
+            </ul>
+          </div>
+
+          <button id="signupSubmitBtn" type="submit" class="submit-btn">Crear mi cuenta en Nora</button>
+        </form>
+
+        <div class="auth-divider">
+          <span>o</span>
+        </div>
+
+        <button id="googleLoginBtn" class="google-btn" type="button">
+          <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          Continuar con Google
+        </button>
+
+        <p id="authMessage" class="auth-message"></p>
+      </div>
+    </div>
+
+    <!-- MAIN APP SCREEN -->
+    <div id="appScreen" class="app-shell hidden">
+      
+      <!-- MOBILE HEADER BAR -->
+      <header class="mobile-nav">
+        <button id="menuToggleBtn" class="icon-btn" type="button" aria-label="Abrir panel" title="Menú">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="mobile-brand">
+          <div class="brand-mark mini">N</div>
+          <span>Nora</span>
+          <span class="status-dot"></span>
+        </div>
+        <div class="mobile-nav-actions">
+          <button id="podcastBtnMob" class="podcast-mini-btn" type="button" title="Podcast Mañanero">
+            📻
+          </button>
+          <button id="sosBtnMob" class="sos-btn mini" type="button" title="Contacto SOS">
+            🆘
+          </button>
+          <button id="audioToggleBtnMob" class="icon-btn audio-btn" type="button" title="Voz de Nora">
+            🔊
+          </button>
+        </div>
+      </header>
+
+      <!-- SIDEBAR / DRAWER -->
+      <aside id="appSidebar" class="sidebar">
+        <div class="sidebar-header">
+          <div class="brand">
+            <div class="brand-mark">N</div>
+            <div>
+              <h1>Nora</h1>
+              <p>Tu asistente personal</p>
+            </div>
+          </div>
+          <button id="closeDrawerBtn" class="close-drawer-btn" type="button" aria-label="Cerrar panel">✕</button>
+        </div>
+
+        <div class="user-box">
+          <div class="user-avatar">👤</div>
+          <div class="user-info">
+            <span>Sesión iniciada</span>
+            <strong id="userName">Usuario</strong>
+          </div>
+        </div>
+
+        <!-- Personality selector -->
+        <div class="personality-box">
+          <span class="section-label">🎭 Personalidad de Nora</span>
+          <div class="personality-pills">
+            <button class="pers-pill active" data-pers="affectionate" title="Dulce, cariñosa y cercana">💖 Cariñosa</button>
+            <button class="pers-pill" data-pers="executive" title="Eficiente, directa y profesional">💼 Ejecutiva</button>
+            <button class="pers-pill" data-pers="cheerful" title="Alegre, motivadora y divertida">😄 Alegre</button>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs: Tareas | Baúl de Recuerdos | Lista Compra -->
+        <div class="main-tabs">
+          <button id="tabTasksBtn" class="main-tab-btn active" type="button">📋 Tareas</button>
+          <button id="tabMemoryBtn" class="main-tab-btn" type="button">🧠 Baúl</button>
+          <button id="tabShoppingBtn" class="main-tab-btn" type="button">🛒 Súper</button>
+        </div>
+
+        <!-- VIEW 1: TASKS PANEL -->
+        <div id="tasksView" class="view-panel active">
+          <div class="tasks-header">
+            <h2>Mis tareas</h2>
+            <span id="taskCountBadge" class="badge">0</span>
+          </div>
+
+          <form id="taskForm" class="task-form">
+            <input id="taskInput" type="text" placeholder="Añadir tarea rápida..." required autocomplete="off" />
+            <input id="taskDueDate" class="task-date-input" type="datetime-local" aria-label="Fecha y hora" title="Fecha y hora del recordatorio" />
+            <select id="taskRecurrence" class="task-repeat-input" aria-label="Repetición" title="Repetición">
+              <option value="">Sin repetir</option>
+              <option value="daily">Cada día</option>
+              <option value="weekly">Cada semana</option>
+              <option value="monthly">Cada mes</option>
+            </select>
+            <button type="submit" title="Guardar tarea">+</button>
+          </form>
+
+          <div class="task-tools">
+            <input id="taskSearch" type="search" placeholder="Buscar tareas..." aria-label="Buscar tareas" />
+            <button id="enableNotificationsBtn" class="tool-btn" type="button">🔔 Activar avisos</button>
+            <button id="exportDataBtn" class="tool-btn" type="button">⬇️ Mis datos</button>
+            <button id="calendarExportBtn" class="tool-btn" type="button">📅 Calendario</button>
+          </div>
+
+          <div class="task-filters">
+            <button class="filter-tab active" data-filter="all">Todas</button>
+            <button class="filter-tab" data-filter="pending">Pendientes</button>
+            <button class="filter-tab" data-filter="completed">Hechas</button>
+          </div>
+
+          <ul id="taskList" class="task-list"></ul>
+        </div>
+
+        <!-- VIEW 2: MEMORY VAULT PANEL (¿Dónde dejé mis cosas?) -->
+        <div id="memoryView" class="view-panel hidden">
+          <div class="tasks-header">
+            <h2>🧠 Baúl de Recuerdos</h2>
+            <span id="memoryCountBadge" class="badge">0</span>
+          </div>
+          <p class="section-desc">Guarda dónde dejas cosas importantes ("Pasaporte en el 2º cajón").</p>
+
+          <form id="memoryForm" class="memory-form">
+            <input id="memoryItemInput" type="text" placeholder="¿Qué objeto/dato? (ej. Pasaporte)" required autocomplete="off" />
+            <input id="memoryLocationInput" type="text" placeholder="¿Dónde está? (ej. En el cajón del escritorio)" required autocomplete="off" />
+            <button type="submit" class="submit-btn-sm">Guardar en el Baúl</button>
+          </form>
+
+          <ul id="memoryList" class="memory-list"></ul>
+        </div>
+
+        <!-- VIEW 3: SHOPPING LIST PANEL (Organizada por pasillos) -->
+        <div id="shoppingView" class="view-panel hidden">
+          <div class="tasks-header">
+            <h2>🛒 Súper por Pasillos</h2>
+            <button id="clearBoughtBtn" class="clean-btn" type="button" title="Limpiar productos comprados">Limpiar hechas</button>
+          </div>
+          <p class="section-desc">Agrupación automática por pasillos del supermercado.</p>
+
+          <form id="shoppingForm" class="task-form">
+            <input id="shoppingInput" type="text" placeholder="Ej. Leche, plátanos, champú..." required autocomplete="off" />
+            <button type="submit" title="Añadir al súper">+</button>
+          </form>
+
+          <div id="shoppingAislesContainer" class="shopping-aisles-container"></div>
+        </div>
+
+        <!-- Quick actions chips -->
+        <div class="quick-actions">
+          <h2>Acciones rápidas</h2>
+          <div class="chip-list">
+            <button class="chip" data-text="¿Qué tengo que hacer hoy?">📋 Mi día</button>
+            <button class="chip" data-text="¿Dónde dejé las llaves?">🧠 ¿Dónde está...?</button>
+            <button class="chip" data-text="Añade leche y tomates a la compra">🛒 Compras</button>
+            <button class="chip" data-text="Ayúdame a redactar una respuesta de WhatsApp">💬 WhatsApp</button>
+          </div>
+        </div>
+
+        <!-- Sidebar footer -->
+        <div class="sidebar-footer">
+          <button id="openGuideBtn" class="guide-btn" type="button">
+            💡 Ver Guía de Inicio de Nora
+          </button>
+          <button id="sosSettingsBtn" class="sos-settings-btn" type="button">
+            🚨 Configurar Contacto SOS
+          </button>
+          <button id="botsBtn" class="guide-btn" type="button">🤖 Bots de Nora</button>
+          <button id="pilotBtn" class="guide-btn" type="button">🚀 Solicitar piloto</button>
+          <button id="upgradeBtn" class="guide-btn" type="button">⭐ Mejorar a Nora Plus</button>
+          <button id="accessibilityBtn" class="guide-btn" type="button">👁️ Modo accesible</button>
+          <button id="deleteAccountBtn" class="logout-btn" type="button">Borrar mis datos</button>
+          <button id="installSidebarBtn" class="sidebar-install-btn hidden" type="button">
+            📲 Instalar App en este equipo
+          </button>
+          <button id="logoutBtn" class="logout-btn" type="button">Cerrar sesión</button>
+        </div>
+      </aside>
+
+      <!-- CHAT MAIN PANEL -->
+      <main class="chat-panel">
+        <header class="chat-header">
+          <div class="chat-title-box">
+            <div class="brand-mark mini">N</div>
+            <div>
+              <strong>Nora</strong>
+              <span class="chat-status"><span class="status-dot"></span> Tu asistente personal</span>
+            </div>
+          </div>
+          
+          <div class="chat-header-actions">
+            <!-- Morning Podcast button -->
+            <button id="podcastBtn" class="podcast-btn" type="button" title="Escuchar el resumen hablado del día (60 segundos)">
+              🎙️ Podcast Mañanero
+            </button>
+            <!-- SOS button -->
+            <button id="sosBtn" class="sos-btn" type="button" title="Aviso de Emergencia SOS">
+              🚨 SOS
+            </button>
+            <!-- Audio toggle button -->
+            <button id="audioToggleBtn" class="audio-btn" type="button" title="Activar/Silenciar voz de Nora">
+              🔊 Voz de Nora
+            </button>
+          </div>
+        </header>
+
+        <!-- Voice Status Banner -->
+        <div id="voiceStatusBanner" class="voice-status-banner hidden">
+          <div class="voice-wave">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <span id="voiceStatusText">Nora está hablando...</span>
+        </div>
+
+        <!-- Messages stream -->
+        <section id="chatMessages" class="chat-messages" aria-live="polite"></section>
+
+        <!-- Hidden Camera / Gallery file input -->
+        <input type="file" id="cameraInput" accept="image/*" class="hidden" capture="environment" />
+
+        <!-- COMPOSER BAR (Camera -> Text Input -> Microphone in Middle -> Send Button) -->
+        <div class="composer-container">
+          <form id="assistantForm" class="composer" autocomplete="off">
+            <!-- Camera / Photo Scanner Button -->
+            <button
+              id="cameraBtn"
+              class="camera-btn"
+              type="button"
+              aria-label="Escanear cita o documento con cámara"
+              title="Escanear cita médica, papel o ticket con IA"
+            >
+              📷
+            </button>
+            
+            <!-- Text Input -->
+            <input
+              id="userInput"
+              type="text"
+              placeholder="Escribe a Nora o pulsa el micro..."
+              autocomplete="off"
+              enterkeyhint="send"
+            />
+
+            <!-- Microphone in the middle -->
+            <button
+              id="voiceBtn"
+              class="voice-btn"
+              type="button"
+              aria-label="Hablar con Nora"
+              title="Pulsa para hablar con Nora"
+            >
+              🎙️
+            </button>
+
+            <!-- Send button -->
+            <button id="sendBtn" type="submit" class="send-btn">
+              Enviar
+            </button>
+          </form>
+        </div>
+      </main>
+    </div>
+
+    <!-- 🌸 MODAL DE ONBOARDING / MINI-GUÍA DE BIENVENIDA DE NORA -->
+    <div id="onboardingModal" class="modal-overlay hidden">
+      <div class="onboarding-card">
+        <div class="onboarding-header">
+          <div class="brand-mark mini">N</div>
+          <div class="step-indicator">
+            <span id="stepDot1" class="step-dot active"></span>
+            <span id="stepDot2" class="step-dot"></span>
+            <span id="stepDot3" class="step-dot"></span>
+            <span id="stepDot4" class="step-dot"></span>
+          </div>
+          <button id="closeOnboardingBtn" class="close-modal-btn" type="button">✕</button>
+        </div>
+
+        <!-- SLIDE 1 -->
+        <div id="onboardingSlide1" class="onboarding-slide active">
+          <div class="slide-icon">🌸</div>
+          <h2>¡Hola! Soy Nora</h2>
+          <p class="slide-text">
+            Bienvenido/a a tu nuevo espacio. Soy tu asistente personal y estoy aquí para cuidarte, recordarte tus cosas importantes y hacer tu día a día mucho más fácil y tranquilo.
+          </p>
+          <div class="feature-highlight">
+            ✨ Háblame por voz o texto cuando quieras.
+          </div>
+        </div>
+
+        <!-- SLIDE 2 -->
+        <div id="onboardingSlide2" class="onboarding-slide hidden">
+          <div class="slide-icon">🎙️</div>
+          <h2>Control por Voz Instantáneo</h2>
+          <p class="slide-text">
+            Pulsa el <strong>micrófono central</strong> en cualquier momento. Te saludaré según la hora y podrás decirme directamente qué quieres que recuerde. Te responderé en el acto.
+          </p>
+          <div class="feature-highlight">
+            👉 Ejemplo: <em>"Recuérdame tomar la pastilla a las 9"</em>
+          </div>
+        </div>
+
+        <!-- SLIDE 3 -->
+        <div id="onboardingSlide3" class="onboarding-slide hidden">
+          <div class="slide-icon">🧠</div>
+          <h2>El Baúl de Recuerdos</h2>
+          <p class="slide-text">
+            ¿Sueles olvidar dónde guardaste cosas? Solo dímelo: <em>"He guardado el pasaporte en el 2º cajón"</em>. Cuando me preguntes <em>"¿Dónde está mi pasaporte?"</em>, te lo diré al instante.
+          </p>
+          <div class="feature-highlight">
+            🔑 Nunca más perderás tus llaves o documentos.
+          </div>
+        </div>
+
+        <!-- SLIDE 4 -->
+        <div id="onboardingSlide4" class="onboarding-slide hidden">
+          <div class="slide-icon">🛒📸</div>
+          <h2>Súper por Pasillos & Cámara</h2>
+          <p class="slide-text">
+            Organizo tu lista de la compra por pasillos del supermercado para que ahorres tiempo, y puedes usar el botón de <strong>cámara 📷</strong> para fotografiar citas médicas y que las guarde por ti.
+          </p>
+          <div class="feature-highlight">
+            📻 Además, disfruta de tu <strong>Podcast Mañanero</strong> de 60s cada día.
+          </div>
+        </div>
+
+        <!-- Onboarding Navigation Buttons -->
+        <div class="onboarding-actions">
+          <button id="prevSlideBtn" class="slide-nav-btn hidden" type="button">Anterior</button>
+          <button id="nextSlideBtn" class="slide-primary-btn" type="button">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOS MODAL -->
+    <div id="sosModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>🚨 Contacto de Emergencia / SOS</h3>
+          <button id="closeSosModalBtn" class="close-modal-btn" type="button">✕</button>
+        </div>
+        <p class="modal-desc">Configura a tu familiar o cuidador de confianza para avisarle con 1 toque en caso de necesidad.</p>
+        
+        <form id="sosForm" class="auth-form">
+          <label>
+            <span>Nombre del contacto</span>
+            <input type="text" id="sosNameInput" placeholder="Ej. Hijo Carlos / Doctor" required />
+          </label>
+          <label>
+            <span>Teléfono con prefijo internacional</span>
+            <input type="tel" id="sosPhoneInput" placeholder="Ej. +34600112233" required />
+          </label>
+          <div class="modal-actions">
+            <button type="submit" class="submit-btn">Guardar contacto</button>
+            <button id="testSosAlertBtn" class="sos-action-btn" type="button">📲 Enviar aviso SOS ahora</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="botsModal" class="modal-overlay hidden">
+      <div class="modal-card bots-card">
+        <div class="modal-header"><h3>🤖 Bots de Nora</h3><button id="closeBotsModalBtn" class="close-modal-btn" type="button">✕</button></div>
+        <p class="modal-desc">Elige un agente para pedirle ayuda a Nora. Cada acción queda bajo tu control.</p>
+        <div class="bot-grid">
+          <button class="bot-card" data-bot="agenda"><strong>📅 Agenda</strong><span>Organiza tu día y detecta conflictos.</span></button>
+          <button class="bot-card" data-bot="rutinas"><strong>🔁 Rutinas</strong><span>Crea hábitos y recordatorios recurrentes.</span></button>
+          <button class="bot-card" data-bot="familia"><strong>👨‍👩‍👧 Familia</strong><span>Prepara tareas para compartir.</span></button>
+          <button class="bot-card" data-bot="documentos"><strong>📄 Documentos</strong><span>Controla renovaciones y fechas importantes.</span></button>
+          <button class="bot-card" data-bot="bienestar"><strong>💚 Bienestar</strong><span>Haz un check-in de hábitos, sin diagnosticar.</span></button>
+          <button class="bot-card" data-bot="seguridad"><strong>🛡️ Seguridad</strong><span>Revisa la higiene básica de tu cuenta.</span></button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#180f2d"/>
+      <stop offset="50%" stop-color="#241442"/>
+      <stop offset="100%" stop-color="#0c0717"/>
+    </linearGradient>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff5bbd"/>
+      <stop offset="50%" stop-color="#c049f5"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="sparkleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#ffb8e4"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded rectangle -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
+  
+  <!-- Outer subtle border -->
+  <rect x="8" y="8" width="496" height="496" rx="120" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="6"/>
+
+  <!-- Glowing circle behind N -->
+  <circle cx="256" cy="256" r="160" fill="url(#brandGrad)" opacity="0.28" filter="url(#glow)"/>
+
+  <!-- Main 'N' for Nora with gradient -->
+  <path d="M 160 360 
+           L 160 152 
+           L 216 152 
+           L 300 292 
+           L 300 152 
+           L 352 152 
+           L 352 360 
+           L 296 360 
+           L 212 220 
+           L 212 360 
+           Z" 
+        fill="url(#brandGrad)" filter="url(#glow)"/>
+
+  <!-- Central Sparkle / Star -->
+  <path d="M 370 120 
+           Q 370 148 398 148 
+           Q 370 148 370 176 
+           Q 370 148 342 148 
+           Q 370 148 370 120 Z" 
+        fill="url(#sparkleGrad)" filter="url(#glow)"/>
+
+  <path d="M 140 370 
+           Q 140 385 155 385 
+           Q 140 385 140 400 
+           Q 140 385 125 385 
+           Q 140 385 140 370 Z" 
+        fill="url(#sparkleGrad)"/>
+</svg>

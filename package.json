@@ -1,0 +1,27 @@
+{
+  "name": "nora-assistant",
+  "version": "1.0.0",
+  "description": "Nora | Tu Asistente Personal con IA, memoria de objetos, visión y voz",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "bot": "node security-bot.js",
+    "test": "node --test test/core.test.js",
+    "prod": "npx pm2 start ecosystem.config.js",
+    "tunnel": "npx localtunnel --port 3000"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0",
+    "pg": "^8.23.0"
+  }
+}

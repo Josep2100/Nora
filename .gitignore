@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+node_modules/
+data/users.json
+data/events.json
+data/security-logs.txt
+data/backups/
+tmp/
+output/
