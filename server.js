@@ -992,14 +992,16 @@ app.post('/api/conchi/whatsapp-reply', ensureAuthenticated, (req, res) => {
 });
 
 // PWA Assets
-app.get('/manifest.webmanifest', (req, res) => {
+app.get(['/manifest.json', '/manifest.webmanifest'], (req, res) => {
   res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
-  res.sendFile(path.join(publicDir, 'manifest.webmanifest'));
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.sendFile(path.join(publicDir, 'manifest.json'));
 });
 
 app.get('/sw.js', (req, res) => {
   res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
   res.setHeader('Service-Worker-Allowed', '/');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.sendFile(path.join(publicDir, 'sw.js'));
 });
 

@@ -17,8 +17,17 @@
     
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="apple-touch-icon" href="/icon.svg" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" href="/manifest.json" />
     <link rel="stylesheet" href="styles.css" />
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .then(function(reg) { console.log('Nora SW ready:', reg.scope); })
+            .catch(function(err) { console.warn('Nora SW error:', err); });
+        });
+      }
+    </script>
   </head>
   <body>
     <!-- PWA Install Banner -->
