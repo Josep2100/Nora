@@ -2,9 +2,14 @@
 .env.*
 !.env.example
 node_modules/
+.venv/
 data/users.json
 data/events.json
 data/security-logs.txt
 data/backups/
 tmp/
 output/
+Vender_Aplicación/
+*.zip
+/informe_estrategico_nora.pdf
+/icon.svg

@@ -35,6 +35,28 @@ const dataDir = path.join(__dirname, 'data');
 const usersFile = path.join(dataDir, 'users.json');
 const sessionSecret = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
+function validateProductionConfig() {
+  if (process.env.NODE_ENV !== 'production') return;
+
+  const required = ['SESSION_SECRET', 'DATA_ENCRYPTION_KEY'];
+  const missing = required.filter((key) => !process.env[key] || process.env[key].length < 32);
+  const hasManagedStorage = Boolean(
+    process.env.DATABASE_URL || (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+  );
+
+  if (!hasManagedStorage) {
+    missing.push('DATABASE_URL o SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY');
+  }
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CALLBACK_URL && !process.env.GOOGLE_CALLBACK_URL.startsWith('https://')) {
+    missing.push('GOOGLE_CALLBACK_URL HTTPS');
+  }
+  if (missing.length) {
+    throw new Error(`Configuración de producción incompleta: ${missing.join(', ')}`);
+  }
+}
+
+validateProductionConfig();
+
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
@@ -305,8 +327,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
               memoryVault: [],
               shoppingList: [],
               emergencyContact: { name: '', phone: '' },
-              privacyConsentAt: new Date().toISOString(),
-              termsConsentAt: new Date().toISOString()
+              privacyConsentAt: null,
+              termsConsentAt: null
             };
             users.push(user);
             saveUsers(users);
@@ -324,6 +346,12 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated && req.isAuthenticated()) {
+    if (req.path !== '/api/user/consent' && (!req.user.privacyConsentAt || !req.user.termsConsentAt)) {
+      return res.status(428).json({
+        code: 'CONSENT_REQUIRED',
+        message: 'Debes aceptar la política de privacidad y los términos para continuar.'
+      });
+    }
     return next();
   }
   return res.status(401).json({ message: 'Debes iniciar sesión primero para usar Nora.' });

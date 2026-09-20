@@ -84,7 +84,10 @@ async function initStorage() {
       try { await supabaseRequest('nora_sessions?select=id&limit=1'); supabaseSessionsEnabled = true; } catch (_) { supabaseSessionsEnabled = false; }
       mode = process.env.SUPABASE_SERVICE_ROLE_KEY ? 'supabase' : 'supabase-anon';
     } catch (error) {
-      console.warn(`Supabase no está listo (${error.message}). Se mantiene el almacenamiento local cifrado.`);
+      console.warn(`Supabase no está listo (${error.message}).`);
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(`El almacenamiento gestionado no está disponible en producción: ${error.message}`);
+      }
       mode = 'encrypted-file';
       usersCache = localUsers;
     }
@@ -99,6 +102,9 @@ async function initStorage() {
     usersCache = fresh.rows.map(row => row.payload);
     mode = 'postgresql';
   } else {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('La producción requiere SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY o DATABASE_URL.');
+    }
     usersCache = localUsers;
     // Converts legacy plaintext users.json to encrypted-at-rest storage.
     const raw = fs.readFileSync(usersFile, 'utf8');

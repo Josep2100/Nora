@@ -125,6 +125,10 @@ const accessibilityBtn = document.getElementById('accessibilityBtn');
 const deleteAccountBtn = document.getElementById('deleteAccountBtn');
 const pilotBtn = document.getElementById('pilotBtn');
 const upgradeBtn = document.getElementById('upgradeBtn');
+const consentModal = document.getElementById('consentModal');
+const accountConsent = document.getElementById('accountConsent');
+const acceptConsentBtn = document.getElementById('acceptConsentBtn');
+const consentMessage = document.getElementById('consentMessage');
 
 // PWA
 const pwaBanner = document.getElementById('pwaBanner');
@@ -472,6 +476,10 @@ function addMessage(role, text, title, whatsappText = null) {
 // ==========================================================================
 // ⚡ RESPUESTA DE VOZ INSTANTÁNEA EN EL ACTO (CERO LATENCIA)
 // ==========================================================================
+function isVoiceAction(text) {
+  return /recuérdame|recuerdame|recordar|recordatorio|apunta|apúntame|anota|añade|agrega|compra|a la lista|dónde está|donde esta|guardé|guarde|en el cajón|en la mesa/i.test(text);
+}
+
 async function handleVoiceInteraction() {
   if (state.isVoiceActive) return;
 
@@ -490,7 +498,7 @@ async function handleVoiceInteraction() {
     const fullPrompt = `${greeting}. ${question}`;
 
     addMessage('assistant', fullPrompt, 'Nora');
-    await speakText(fullPrompt);
+    speakText(fullPrompt);
 
     await new Promise((resolve) => {
       const recognition = new SpeechRecognition();
@@ -500,6 +508,19 @@ async function handleVoiceInteraction() {
       recognition.maxAlternatives = 1;
 
       let recognized = false;
+      let settled = false;
+      const finishRecognition = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+      const recognitionTimeout = setTimeout(() => {
+        if (!recognized) {
+          try { recognition.stop(); } catch (_) {}
+          addMessage('assistant', 'No he recibido audio. Comprueba el permiso del micrófono y vuelve a intentarlo.', 'Nora');
+        }
+        finishRecognition();
+      }, 12000);
 
       recognition.onstart = () => {
         voiceBtn.classList.add('listening');
@@ -509,6 +530,7 @@ async function handleVoiceInteraction() {
 
       recognition.onresult = async (event) => {
         recognized = true;
+        clearTimeout(recognitionTimeout);
         const transcript = event.results[0][0].transcript;
         
         voiceBtn.classList.remove('listening');
@@ -517,42 +539,41 @@ async function handleVoiceInteraction() {
 
         addMessage('user', transcript, 'Tú');
 
-        // ⚡ RESPUESTA EN EL ACTO: Iniciar síntesis vocal de inmediato en local (0 ms)
-        const cleanTitle = cleanReminderTitleClient(transcript);
-        let instantSpeech = `¡Anotado, cariño! Ya te he guardado: ${cleanTitle}.`;
-        if (state.personality === 'executive') {
-          instantSpeech = `Guardado: ${cleanTitle}.`;
-        } else if (state.personality === 'cheerful') {
-          instantSpeech = `¡Hecho, corazón! Apuntadísimo: ${cleanTitle}.`;
-        }
+        const actionRequest = isVoiceAction(transcript);
+        const endpoint = actionRequest ? '/api/conchi/voice-task' : '/api/conchi/message';
+        const payload = actionRequest ? { transcript } : { text: transcript };
 
-        // Si no es memoria o compra compleja, empieza a hablar AL INSTANTE
-        const lower = transcript.toLowerCase();
-        const isSpecialAction = /dónde está|guardado el|guardé|en el cajón|a la compra|al súper/i.test(lower);
-        if (!isSpecialAction) {
+        if (actionRequest) {
+          const cleanTitle = cleanReminderTitleClient(transcript);
+          let instantSpeech = `¡Anotado, cariño! Ya te he guardado: ${cleanTitle}.`;
+          if (state.personality === 'executive') instantSpeech = `Guardado: ${cleanTitle}.`;
+          if (state.personality === 'cheerful') instantSpeech = `¡Hecho, corazón! Apuntadísimo: ${cleanTitle}.`;
           speakText(instantSpeech);
+        } else {
+          showVoiceBanner('Nora está preparando tu respuesta...', 'speaking');
         }
 
-        // En paralelo, guardar en la base de datos
+        // En paralelo, guardar la acción o resolver la conversación.
         try {
-          const res = await fetch('/api/conchi/voice-task', {
+          const res = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ transcript })
+            body: JSON.stringify(payload)
           });
 
           const data = await res.json();
-          if (res.ok && data.ok) {
-            if (data.actionType === 'memory' && data.memoryVault) {
+          if (res.ok && (actionRequest ? data.ok : data.response)) {
+            if (!actionRequest && data.response) {
+              addMessage('assistant', data.response, 'Nora', data.whatsappText || null);
+              await speakText(data.response);
+            } else if (data.actionType === 'memory' && data.memoryVault) {
               state.memoryVault = data.memoryVault;
               renderMemory();
               addMessage('assistant', data.responseText, 'Nora');
-              if (data.spokenConfirmation) await speakText(data.spokenConfirmation);
             } else if (data.actionType === 'shopping' && data.shoppingList) {
               state.shoppingList = data.shoppingList;
               renderShopping();
               addMessage('assistant', data.responseText, 'Nora');
-              if (data.spokenConfirmation) await speakText(data.spokenConfirmation);
             } else if (data.tasks) {
               state.tasks = data.tasks;
               renderTasks();
@@ -563,24 +584,26 @@ async function handleVoiceInteraction() {
           console.error('Error background sync voz:', err);
         }
 
-        resolve();
+        finishRecognition();
       };
 
       recognition.onerror = (event) => {
+        clearTimeout(recognitionTimeout);
         voiceBtn.classList.remove('listening');
         voiceBtn.textContent = '🎙️';
         hideVoiceBanner();
         if (!recognized) {
           addMessage('assistant', 'No te he escuchado con claridad, cielo. Pulsa el micro para intentarlo de nuevo.', 'Nora');
         }
-        resolve();
+        finishRecognition();
       };
 
       recognition.onend = () => {
+        clearTimeout(recognitionTimeout);
         voiceBtn.classList.remove('listening');
         voiceBtn.textContent = '🎙️';
         hideVoiceBanner();
-        resolve();
+        finishRecognition();
       };
 
       recognition.start();
@@ -998,6 +1021,42 @@ function showAppScreen() {
   appScreen.classList.remove('hidden');
 }
 
+function openConsentModal() {
+  consentMessage.textContent = '';
+  accountConsent.checked = false;
+  consentModal.classList.remove('hidden');
+}
+
+async function acceptAccountConsent() {
+  if (!accountConsent.checked) {
+    consentMessage.textContent = 'Marca la casilla para continuar.';
+    return;
+  }
+
+  acceptConsentBtn.disabled = true;
+  try {
+    const response = await fetch('/api/user/consent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accepted: true })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'No se pudo guardar el consentimiento.');
+    state.user = data.user;
+    consentModal.classList.add('hidden');
+    await loadTasks();
+    await loadMemory();
+    await loadShopping();
+    if (state.user.hasSeenOnboarding === false) openOnboardingModal();
+  } catch (error) {
+    consentMessage.textContent = error.message;
+  } finally {
+    acceptConsentBtn.disabled = false;
+  }
+}
+
+if (acceptConsentBtn) acceptConsentBtn.addEventListener('click', acceptAccountConsent);
+
 async function loadSession() {
   try {
     const response = await fetch('/api/auth/me');
@@ -1018,6 +1077,10 @@ async function loadSession() {
     });
 
     showAppScreen();
+    if (!data.user.privacyConsentAt || !data.user.termsConsentAt) {
+      openConsentModal();
+      return;
+    }
     await loadTasks();
     await loadMemory();
     await loadShopping();

@@ -488,6 +488,23 @@
       </div>
     </div>
 
+    <div id="consentModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Antes de empezar</h3>
+        </div>
+        <p class="modal-desc">Para usar Nora necesitamos tu aceptación de la política de privacidad y los términos del servicio.</p>
+        <label class="consent-row">
+          <input type="checkbox" id="accountConsent" />
+          <span>Acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a> y los <a href="/terminos.html" target="_blank" rel="noopener">términos del servicio</a>.</span>
+        </label>
+        <div class="modal-actions">
+          <button id="acceptConsentBtn" class="submit-btn" type="button">Continuar</button>
+        </div>
+        <p id="consentMessage" class="auth-message"></p>
+      </div>
+    </div>
+
     <script src="app.js"></script>
   </body>
 </html>

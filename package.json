@@ -10,6 +10,7 @@
     "start": "node server.js",
     "bot": "node security-bot.js",
     "test": "node --test test/core.test.js",
+    "check": "node --check server.js && node --check storage.js && node --check gemini.js && node --check public/app.js && npm test",
     "prod": "npx pm2 start ecosystem.config.js",
     "tunnel": "npx localtunnel --port 3000"
   },
