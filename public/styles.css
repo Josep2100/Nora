@@ -1,61 +1,178 @@
+/* ==========================================================================
+   NORA - PREMIUM & PROFESSIONAL DESIGN
+   ========================================================================== */
+
 :root {
-  --primary-color: #7c3aed;
-  --primary-hover: #6d28d9;
-  --secondary-color: #ec4899;
-  --accent-color: #8b5cf6;
-  --dark-bg: #0f172a;
-  --card-bg: #1e293b;
+  --bg-main: #0a0b10;
+  --bg-card: #13151f;
+  --bg-input: #1a1d2b;
+  --accent-purple: #7c3aed;
+  --accent-pink: #d946ef;
+  --accent-blue: #06b6d4;
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
-  --border-color: #334155;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --danger-color: #ef4444;
-  --radius-sm: 8px;
-  --radius-md: 12px;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --gradient-glow: linear-gradient(135deg, #7c3aed 0%, #d946ef 50%, #06b6d4 100%);
+  --shadow-card: 0 20px 40px rgba(0, 0, 0, 0.6);
   --radius-lg: 16px;
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  --radius-md: 10px;
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 body {
-  background-color: var(--dark-bg);
+  background-color: var(--bg-main);
   color: var(--text-main);
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
 }
 
-/* Revertir estilos globales y mantener la estructura original */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
+/* Container Principal Limpio y Centrado */
+.container, #app, main {
   width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
 }
 
-/* Ajuste específico únicamente para arreglar el desplegable del menú lateral sin romper el diseño */
-.sidebar, #sidebar, .nav-menu {
+/* Tarjeta Principal de Registro / Login */
+.auth-card, .login-container, .card, #authScreen {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(10px);
+  text-align: center;
+}
+
+/* Logo de Nora Prominente */
+img[src*="logo"], img[alt*="Nora"], .logo {
+  width: 110px !important;
+  height: 110px !important;
+  max-width: 100%;
+  margin: 0 auto 1.25rem auto;
+  display: block;
+  border-radius: 22px;
+  box-shadow: 0 10px 25px rgba(124, 58, 237, 0.35);
+}
+
+/* Títulos y Subtítulos */
+h1, h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: var(--gradient-glow);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+p, .subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* Formularios */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  text-align: left;
+}
+
+label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 0.9rem 1.1rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.25 ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+  border-color: var(--accent-pink);
+  box-shadow: 0 0 15px rgba(217, 70, 239, 0.25);
+}
+
+/* Botones con Gradiente Profesional */
+button, input[type="submit"], .btn-primary {
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  background: var(--gradient-glow);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+}
+
+button:hover, input[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(217, 70, 239, 0.4);
+}
+
+/* Botón de Google Estilizado */
+button[id*="google"], .btn-google, form[action*="google"] button {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  margin-top: 0.5rem;
+}
+
+/* Listas y Requisitos */
+ul {
+  list-style: none;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Sidebar Ajustado */
+.sidebar, #sidebar {
   position: fixed !important;
   top: 0;
   left: -280px;
   width: 280px;
   height: 100vh;
-  background-color: var(--card-bg) !important;
+  background-color: var(--bg-card) !important;
   z-index: 9999 !important;
-  transition: left 0.3s ease-in-out;
-  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+  transition: left 0.3s ease;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.8);
 }
 
-.sidebar.active, #sidebar.active, .nav-menu.open {
+.sidebar.active, #sidebar.active {
   left: 0 !important;
 }
 
@@ -65,7 +182,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   z-index: 9998;
   display: none;
 }
