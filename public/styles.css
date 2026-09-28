@@ -1,14 +1,14 @@
 /* ==========================================================================
    NORA - ASISTENTE PERSONAL
-   Estilos Principales
+   Estilos Principales y Pantalla de Autenticación
    ========================================================================== */
 
 :root {
   --bg-primary: #0b0c10;
   --bg-secondary: #12131c;
-  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-card: rgba(255, 255, 255, 0.05);
   --bg-card-hover: rgba(255, 255, 255, 0.08);
-  --border-color: rgba(255, 255, 255, 0.1);
+  --border-color: rgba(255, 255, 255, 0.12);
   --accent-purple: #8a2be2;
   --accent-pink: #da70d6;
   --accent-blue: #00d2ff;
@@ -32,24 +32,193 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   overflow-x: hidden;
 }
 
 /* --------------------------------------------------------------------------
-   Estructura Principal
+   Pantalla de Autenticación / Login / Registro
+   -------------------------------------------------------------------------- */
+
+.auth-container, #auth-container, .login-container, #loginScreen {
+  width: 100%;
+  max-width: 440px;
+  margin: 2rem auto;
+  padding: 2.5rem 2rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.auth-logo, img[alt*="Nora"], img[src*="logo"] {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 0.5rem auto;
+  border-radius: 20px;
+  object-fit: contain;
+}
+
+h1, h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.25rem;
+}
+
+p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* Estilos para Formularios e Inputs */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  text-align: left;
+}
+
+label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+  border-color: var(--accent-pink);
+  background: var(--bg-card-hover);
+  box-shadow: 0 0 10px rgba(218, 112, 214, 0.2);
+}
+
+/* Botones principales */
+button, input[type="submit"], .btn {
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent-gradient);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+button:hover, input[type="submit"]:hover, .btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+/* Pestañas de Iniciar Sesión / Registro */
+.auth-tabs, .tabs {
+  display: flex;
+  background: var(--bg-card);
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+  margin-bottom: 1rem;
+}
+
+.tab-btn, .tab {
+  flex: 1;
+  padding: 0.6rem;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  border: none;
+}
+
+.tab-btn.active, .tab.active {
+  background: var(--bg-secondary);
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+/* Requisitos de contraseña y política */
+ul, .password-requirements {
+  list-style: none;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.checkbox-container a {
+  color: var(--accent-blue);
+  text-decoration: none;
+}
+
+/* Botón Google y PWA Banner */
+.google-btn {
+  background: #ffffff !important;
+  color: #333333 !important;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.pwa-banner, #installBanner {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* --------------------------------------------------------------------------
+   Estructura de la App Principal (Una vez iniciada la sesión)
    -------------------------------------------------------------------------- */
 
 .app-container {
   display: flex;
-  flex: 1;
-  width: 100%;
+  width: 100vw;
   height: 100vh;
   position: relative;
 }
-
-/* --------------------------------------------------------------------------
-   Menú Lateral / Sidebar (Corregido con Z-Index y Fondo Sólido)
-   -------------------------------------------------------------------------- */
 
 .sidebar, #sidebar, .nav-menu {
   position: fixed !important;
@@ -81,72 +250,11 @@ body {
   backdrop-filter: blur(4px);
   z-index: 9998;
   display: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
 }
 
 .sidebar-overlay.active {
   display: block;
-  opacity: 1;
 }
-
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 1.5rem;
-}
-
-.sidebar-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-weight: 700;
-  font-size: 1.25rem;
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.sidebar-logo img {
-  width: 32px;
-  height: 32px;
-}
-
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  color: var(--text-muted);
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.nav-item:hover, .nav-item.active {
-  background: var(--bg-card-hover);
-  color: var(--text-main);
-}
-
-.nav-item.active {
-  border-left: 3px solid var(--accent-pink);
-}
-
-/* --------------------------------------------------------------------------
-   Área de Contenido y Cabecera Superior
-   -------------------------------------------------------------------------- */
 
 .main-content {
   flex: 1;
@@ -154,7 +262,6 @@ body {
   flex-direction: column;
   height: 100vh;
   width: 100%;
-  position: relative;
 }
 
 .top-bar {
@@ -165,49 +272,7 @@ body {
   background: rgba(18, 19, 28, 0.8);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-color);
-  z-index: 100;
 }
-
-.menu-toggle {
-  background: transparent;
-  border: none;
-  color: var(--text-main);
-  font-size: 1.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  transition: background 0.2s ease;
-}
-
-.menu-toggle:hover {
-  background: var(--bg-card-hover);
-}
-
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--accent-gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  color: white;
-}
-
-/* --------------------------------------------------------------------------
-   Interfaz del Chat Conversacional
-   -------------------------------------------------------------------------- */
 
 .chat-container {
   flex: 1;
@@ -218,45 +283,6 @@ body {
   gap: 1rem;
 }
 
-.message {
-  display: flex;
-  gap: 0.75rem;
-  max-width: 80%;
-}
-
-.message.user {
-  align-self: flex-end;
-  flex-direction: row-reverse;
-}
-
-.message.bot {
-  align-self: flex-start;
-}
-
-.message-bubble {
-  padding: 0.85rem 1.15rem;
-  border-radius: 16px;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-.message.user .message-bubble {
-  background: linear-gradient(135deg, #8a2be2 0%, #6a0dad 100%);
-  color: white;
-  border-bottom-right-radius: 4px;
-}
-
-.message.bot .message-bubble {
-  background: var(--bg-card-hover);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  border-bottom-left-radius: 4px;
-}
-
-/* --------------------------------------------------------------------------
-   Controles de Entrada y Botones
-   -------------------------------------------------------------------------- */
-
 .input-container {
   padding: 1rem 1.5rem;
   background: var(--bg-secondary);
@@ -264,53 +290,4 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-}
-
-.input-box {
-  flex: 1;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 24px;
-  padding: 0.75rem 1.25rem;
-  color: var(--text-main);
-  font-size: 0.95rem;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.input-box:focus {
-  border-color: var(--accent-pink);
-}
-
-.action-btn {
-  background: var(--accent-gradient);
-  border: none;
-  color: white;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.action-btn:hover {
-  transform: scale(1.05);
-  opacity: 0.9;
-}
-
-/* --------------------------------------------------------------------------
-   Responsividad y Móviles
-   -------------------------------------------------------------------------- */
-
-@media (max-width: 768px) {
-  .message {
-    max-width: 90%;
-  }
-
-  .sidebar {
-    width: 250px;
-  }
 }
