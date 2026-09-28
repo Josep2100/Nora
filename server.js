@@ -147,7 +147,7 @@ function sanitizeUser(user) {
     name: user.name,
     email: user.email,
     provider: user.provider || 'local',
-    personality: user.personality || 'affectionate',
+    personality: user.personality || 'executive',
     hasSeenOnboarding: user.hasSeenOnboarding !== false, // boolean
     isNewUser: Boolean(user.isNewUser),
     tasks: Array.isArray(user.tasks) ? user.tasks : [],
@@ -167,7 +167,7 @@ function persistUserUpdate(userId, updater) {
   if (!Array.isArray(users[index].tasks)) users[index].tasks = [];
   if (!Array.isArray(users[index].memoryVault)) users[index].memoryVault = [];
   if (!Array.isArray(users[index].shoppingList)) users[index].shoppingList = [];
-  if (!users[index].personality) users[index].personality = 'affectionate';
+  if (!users[index].personality) users[index].personality = 'executive';
   if (!users[index].emergencyContact) users[index].emergencyContact = { name: '', phone: '' };
 
   const updated = updater(users[index]);
@@ -216,12 +216,12 @@ function createTaskObject(title, details = '', category = null, dueDate = null, 
 
 function getTaskSummary(tasks) {
   if (!tasks || tasks.length === 0) {
-    return 'Todavía no tienes tareas guardadas. Pulsa el micrófono para dictarme tu primer recordatorio.';
+    return 'Todavía no tiene tareas guardadas. Puede indicarme el primer recordatorio por texto o mediante el micrófono.';
   }
 
   const pending = tasks.filter((task) => !task.completed);
   if (!pending.length) {
-    return '¡Enhorabuena, corazón! Has completado todas tus tareas de hoy.';
+    return 'No tiene tareas pendientes. Todas las tareas registradas están completadas.';
   }
 
   const nextTask = pending[0];
@@ -229,37 +229,20 @@ function getTaskSummary(tasks) {
   return `Tienes ${remaining} tarea${remaining > 1 ? 's' : ''} pendiente${remaining > 1 ? 's' : ''}. La más prioritaria es: “${nextTask.title}”.`;
 }
 
-function generateWhatsappReply(message, personality = 'affectionate') {
+function generateWhatsappReply(message, personality = 'executive') {
   const text = String(message || '').trim();
   const lower = text.toLowerCase();
   const cleaned = text.replace(/\s+/g, ' ').trim();
 
-  if (!text) {
-    return '“Gracias por tu mensaje. Lo he recibido y te respondo en cuanto me sea posible.”';
-  }
-
-  if (personality === 'executive') {
-    if (lower.includes('gracias')) return '“Agradezco tu mensaje. Quedo a tu disposición.”';
-    if (lower.includes('mañana') || lower.includes('hora') || lower.includes('cita')) {
-      return `“Confirmada la disponibilidad para: ${cleaned}. Saludos cordiales.”`;
-    }
-    return `“Recibido tu mensaje sobre: ${cleaned}. Procedo a gestionarlo.”`;
-  }
-
-  if (lower.includes('gracias')) {
-    return '“¡Muchísimas gracias a ti! Me alegra haber podido ayudarte. Quedo a tu disposición para lo que necesites.”';
-  }
+  if (!text) return '“Gracias por su mensaje. Lo he recibido y le responderé en cuanto sea posible.”';
+  if (lower.includes('gracias')) return '“Gracias por su mensaje. Quedo a su disposición.”';
   if (lower.includes('mañana') || lower.includes('hora') || lower.includes('cita')) {
-    return `“Perfecto, tomo nota de la fecha y hora: ${cleaned}. Te confirmo que estaré disponible. ¡Hablamos pronto!”`;
+    return `“He recibido su mensaje sobre: ${cleaned}. Quedo pendiente de la fecha y hora que correspondan.”`;
   }
   if (lower.includes('no puedo') || lower.includes('imposible') || lower.includes('cancelar')) {
-    return '“Entiendo perfectamente. No te preocupes por el cambio, lo reprogramamos para otro día que te venga mejor. Avísame cuando tengas un hueco.”';
+    return '“Comprendo el cambio. Podemos reprogramarlo para una fecha que le resulte conveniente.”';
   }
-  if (lower.includes('urgente') || lower.includes('importante')) {
-    return '“Recibido con máxima prioridad. Ya me pongo con ello para resolvértelo lo más pronto posible.”';
-  }
-
-  return `“Hola, gracias por escribirme. He revisado tu mensaje sobre: '${cleaned}'. Te confirmo la gestión y te mantengo al tanto.”`;
+  return `“He recibido su mensaje sobre: ${cleaned}. Procederé a gestionarlo. Quedo a su disposición.”`;
 }
 
 // Passport Auth Setup
@@ -320,7 +303,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
               name: profile.displayName || 'Usuario de Google',
               email,
               provider: 'google',
-              personality: 'affectionate',
+              personality: 'executive',
               hasSeenOnboarding: false,
               isNewUser: true,
               tasks: [],
@@ -425,7 +408,7 @@ app.post('/api/auth/signup', rateLimitAuth, async (req, res) => {
     email: String(email).trim(),
     passwordHash,
     provider: 'local',
-    personality: 'affectionate',
+    personality: 'executive',
     hasSeenOnboarding: false, // Flag para activar Onboarding guiado
     isNewUser: true,
     tasks: [],
@@ -502,7 +485,7 @@ app.post('/api/user/onboarding-complete', ensureAuthenticated, (req, res) => {
 app.get('/api/user/settings', ensureAuthenticated, (req, res) => {
   const user = findUserById(req.user.id);
   res.json({
-    personality: user.personality || 'affectionate',
+    personality: user.personality || 'executive',
     emergencyContact: user.emergencyContact || { name: '', phone: '' },
     hasSeenOnboarding: user.hasSeenOnboarding !== false
   });
@@ -556,7 +539,7 @@ app.post('/api/pilot/apply', ensureAuthenticated, (req, res) => {
   const user = findUserById(req.user.id);
   const message = String(req.body?.message || '').trim().slice(0, 500);
   storage.trackEvent(req.user.id, 'pilot_application', { hasMessage: Boolean(message) });
-  res.json({ ok: true, message: `Gracias, ${user?.name?.split(' ')[0] || 'cielo'}. Hemos registrado tu interés en el piloto de Nora.` });
+  res.json({ ok: true, message: `Gracias, ${user?.name?.split(' ')[0] || 'Usuario'}. Hemos registrado correctamente su interés en el piloto de Nora.` });
 });
 
 app.get('/api/user/export', ensureAuthenticated, (req, res) => {
@@ -739,8 +722,8 @@ app.post('/api/shopping/clear-bought', ensureAuthenticated, (req, res) => {
 // 🎙️ Podcast Mañanero de 60s
 app.get('/api/conchi/morning-podcast', ensureAuthenticated, async (req, res) => {
   const user = findUserById(req.user.id);
-  const userName = user ? user.name.split(' ')[0] : 'amigo';
-  const personality = user ? user.personality || 'affectionate' : 'affectionate';
+  const userName = user ? user.name.split(' ')[0] : 'Usuario';
+  const personality = user ? user.personality || 'executive' : 'executive';
 
   const podcast = await generateMorningPodcast(userName, user ? user.tasks : [], personality);
   res.json({ ok: true, podcast });
@@ -754,8 +737,8 @@ app.post('/api/conchi/scan-document', ensureAuthenticated, async (req, res) => {
   }
 
   const user = findUserById(req.user.id);
-  const userName = user ? user.name.split(' ')[0] : 'amigo';
-  const personality = user ? user.personality || 'affectionate' : 'affectionate';
+  const userName = user ? user.name.split(' ')[0] : 'Usuario';
+  const personality = user ? user.personality || 'executive' : 'executive';
 
   try {
     const extracted = await scanDocumentWithVision(imageBase64, mimeType, userName, personality);
@@ -792,8 +775,8 @@ app.post('/api/conchi/voice-task', ensureAuthenticated, async (req, res) => {
   }
 
   const user = findUserById(req.user.id);
-  const userName = user ? user.name.split(' ')[0] : 'amigo';
-  const personality = user ? user.personality || 'affectionate' : 'affectionate';
+  const userName = user ? user.name.split(' ')[0] : 'Usuario';
+  const personality = user ? user.personality || 'executive' : 'executive';
   const lower = transcript.toLowerCase();
 
   if (/compra|súper|supermercado|añade a la lista/.test(lower) && !lower.includes('recordar comprar')) {
@@ -822,8 +805,8 @@ app.post('/api/conchi/voice-task', ensureAuthenticated, async (req, res) => {
       ok: true,
       actionType: 'shopping',
       shoppingList: updatedUser.shoppingList,
-      spokenConfirmation: `¡Añadido a tu lista de la compra, cielo: ${items.join(', ')}!`,
-      responseText: `🛒 He añadido a tu lista de la compra: **${items.join(', ')}** (organizado por pasillos).`
+      spokenConfirmation: `Se han añadido correctamente a su lista de la compra: ${items.join(', ')}.`,
+      responseText: `He añadido a su lista de la compra: **${items.join(', ')}** y los he organizado por pasillos.`
     });
   }
 
@@ -850,7 +833,7 @@ app.post('/api/conchi/voice-task', ensureAuthenticated, async (req, res) => {
 
   try {
     const parsed = await parseVoiceReminder(transcript, userName, personality);
-    const newTask = createTaskObject(parsed.title, `Dictado por voz: "${transcript}"`, parsed.category);
+    const newTask = createTaskObject(parsed.title, `Dictado por voz: "${transcript}"`, parsed.category, parsed.dueDate || null, parsed.recurrence || null);
 
     const updatedUser = persistUserUpdate(req.user.id, (currentUser) => {
       currentUser.tasks = Array.isArray(currentUser.tasks) ? currentUser.tasks : [];
@@ -868,7 +851,7 @@ app.post('/api/conchi/voice-task', ensureAuthenticated, async (req, res) => {
     });
   } catch (error) {
     const fast = parseVoiceReminderFast(transcript, userName, personality);
-    const fallbackTask = createTaskObject(fast.title, transcript, fast.category);
+    const fallbackTask = createTaskObject(fast.title, transcript, fast.category, fast.dueDate || null, fast.recurrence || null);
 
     const updatedUser = persistUserUpdate(req.user.id, (currentUser) => {
       currentUser.tasks = Array.isArray(currentUser.tasks) ? currentUser.tasks : [];
@@ -891,37 +874,75 @@ app.post('/api/conchi/voice-task', ensureAuthenticated, async (req, res) => {
 app.post('/api/conchi/message', ensureAuthenticated, async (req, res) => {
   const text = String(req.body && req.body.text ? req.body.text : '').trim();
   const user = findUserById(req.user.id);
-  const userName = user ? user.name.split(' ')[0] : 'amigo';
-  const personality = user ? user.personality || 'affectionate' : 'affectionate';
+  const userName = user ? user.name.split(' ')[0] : 'Usuario';
+  const personality = user ? user.personality || 'executive' : 'executive';
   const lower = text.toLowerCase();
 
   if (!text) {
     return res.json({
-      response: `Estoy aquí para ayudarte, ${userName}, corazón. ¿Qué quieres hacer o recordar hoy?`
+      response: `Estoy a su disposición, ${userName}. Indíqueme qué desea organizar, recordar o consultar.`
     });
   }
 
+  // Acciones deterministas: primero ejecutamos lo que el usuario solicita y después respondemos.
+  if (/\b(recuérdame|recuerdame|recuerda|apúntame|apuntame|apunta|anota|no olvides|no te olvides|guarda(?:me)?|registr(a|e)(?:me)?|añade(?:me)? una tarea|agrega(?:me)? una tarea)\b/i.test(text)) {
+    try {
+      const parsed = await parseVoiceReminder(text, userName, 'executive');
+      const savedTask = createTaskObject(
+        parsed.title,
+        `Creado desde el chat: "${text}"`,
+        parsed.category,
+        parsed.dueDate || null,
+        parsed.recurrence || null
+      );
+
+      const updatedUser = persistUserUpdate(req.user.id, (currentUser) => {
+        currentUser.tasks = Array.isArray(currentUser.tasks) ? currentUser.tasks : [];
+        currentUser.tasks.unshift(savedTask);
+        return currentUser;
+      });
+
+      storage.trackEvent(req.user.id, 'task_created', {
+        source: 'chat',
+        hasDueDate: Boolean(savedTask.dueDate),
+        recurrence: Boolean(savedTask.recurrence)
+      });
+
+      return res.json({
+        ok: true,
+        actionType: 'task',
+        response: parsed.responseText || `He registrado correctamente el recordatorio: “${savedTask.title}”.`,
+        spokenConfirmation: parsed.spokenConfirmation,
+        task: savedTask,
+        tasks: updatedUser ? updatedUser.tasks : []
+      });
+    } catch (error) {
+      console.error('Error registrando recordatorio desde chat:', error);
+      return res.status(500).json({ message: 'No se pudo registrar el recordatorio. Inténtelo de nuevo.' });
+    }
+  }
+
   const botQuickReplies = [
-    [/agenda|organizar mi día|organizar mi dia/, 'agenda', 'Puedo ayudarte a ordenar tu agenda. Dime las citas o tareas y te las convierto en recordatorios claros, cielo.'],
-    [/rutina|hábito|habito|recurrente/, 'rutinas', 'Claro, cariño. Añade una tarea con fecha y elige si se repite cada día, semana o mes.'],
-    [/familia|compartir|cuidador/, 'familia', 'La función Familia está preparada para compartir tareas con personas de confianza. Primero dime qué tarea quieres preparar.'],
-    [/documento|renovación|renovacion|caducidad/, 'documentos', 'Puedo leer documentos con la cámara y convertir sus fechas importantes en tareas. Pulsa el botón de cámara, corazón.'],
-    [/bienestar|cómo estoy|como estoy|hábitos|habitos/, 'bienestar', 'Hagamos un check-in suave: ¿cómo te encuentras hoy y qué pequeño hábito quieres cuidar?'],
-    [/seguridad|proteger mi cuenta|privacidad/, 'seguridad', 'Tu cuenta usa contraseña reforzada, sesiones protegidas y copias de seguridad. No compartas tus claves y activa los avisos del navegador.']
+    [/agenda|organizar mi día|organizar mi dia/, 'agenda', 'Puedo ayudarle a organizar su agenda. Indíqueme las citas o tareas que desea registrar y las convertiré en recordatorios.'],
+    [/rutina|hábito|habito|recurrente/, 'rutinas', 'Puedo crear una rutina recurrente. Indíqueme la actividad y la frecuencia: diaria, semanal o mensual.'],
+    [/familia|compartir|cuidador/, 'familia', 'Puedo ayudarle a preparar una tarea para compartir con un familiar o cuidador. Indíqueme qué tarea desea preparar.'],
+    [/documento|renovación|renovacion|caducidad/, 'documentos', 'Puedo analizar un documento mediante la cámara y convertir sus fechas importantes en tareas.'],
+    [/bienestar|cómo estoy|como estoy|hábitos|habitos/, 'bienestar', 'Puedo realizar un check-in de hábitos y bienestar sin realizar diagnósticos. Indíqueme qué aspecto desea revisar.'],
+    [/seguridad|proteger mi cuenta|privacidad/, 'seguridad', 'Su cuenta dispone de autenticación y controles de privacidad. No comparta sus credenciales y mantenga activados los avisos de seguridad.']
   ];
   const quickBot = botQuickReplies.find(([pattern]) => pattern.test(lower));
   if (quickBot) return res.json({ response: quickBot[2], bot: quickBot[1] });
 
   if (/whatsapp|responder a|redacta mensaje|excusa/i.test(lower)) {
-    const reply = generateWhatsappReply(text, personality);
+    const reply = generateWhatsappReply(text, 'executive');
     return res.json({
-      response: `Aquí tienes la respuesta redactada:\n\n${reply}`,
+      response: `Aquí tiene la respuesta redactada:\n\n${reply}`,
       whatsappText: reply.replace(/^“|”$/g, ''),
       hasWhatsappButton: true
     });
   }
 
-  const memResult = await processMemoryInteraction(text, user.memoryVault || [], userName, personality);
+  const memResult = await processMemoryInteraction(text, user.memoryVault || [], userName, 'executive');
   if (memResult.isMemoryAction) {
     if (memResult.action === 'save' && memResult.memory) {
       persistUserUpdate(req.user.id, (u) => {
@@ -936,39 +957,18 @@ app.post('/api/conchi/message', ensureAuthenticated, async (req, res) => {
     });
   }
 
-  if (/^(recuerda|recuérdame|recordatorio|apunta|apúntame|añade|agrega|anota|guarda tarea)\s+/i.test(text)) {
-    const parsed = await parseVoiceReminder(text, userName, personality);
-    const savedTask = createTaskObject(parsed.title, `Creado desde el chat: "${text}"`, parsed.category);
-
-    const updatedUser = persistUserUpdate(req.user.id, (currentUser) => {
-      currentUser.tasks = Array.isArray(currentUser.tasks) ? currentUser.tasks : [];
-      currentUser.tasks.unshift(savedTask);
-      return currentUser;
-    });
-
-    return res.json({
-      response: parsed.responseText || `¡Hecho, cielo! He registrado tu recordatorio: “${savedTask.title}”.`,
-      spokenConfirmation: parsed.spokenConfirmation,
-      tasks: updatedUser ? updatedUser.tasks : []
-    });
-  }
-
-  if (/qué tengo hoy|que tengo hoy|plan del día|mi día|orden del día|resumen de tareas/.test(lower)) {
+  if (/qué tengo hoy|que tengo hoy|plan del día|plan del dia|mi día|mi dia|orden del día|orden del dia|resumen de tareas/.test(lower)) {
     const summary = getTaskSummary(user ? user.tasks : []);
-    return res.json({
-      response: `Aquí tienes tu plan, ${userName}: ${summary}`
-    });
+    return res.json({ response: `Este es su resumen, ${userName}: ${summary}` });
   }
 
   try {
-    const aiResponse = await generateConchiResponse(text, user.tasks, user.memoryVault, userName, personality);
-    return res.json({
-      response: aiResponse.response
-    });
+    const aiResponse = await generateConchiResponse(text, user.tasks, user.memoryVault, userName, 'executive');
+    return res.json({ response: aiResponse.response });
   } catch (error) {
     console.error('Error generando respuesta de Nora:', error);
     return res.json({
-      response: `Entendido, ${userName} cariño. Estoy a tu disposición para ayudarte con tus tareas, compras y recordatorios.`
+      response: `Disculpe, ${userName}. No he podido completar la consulta en este momento. Puede indicarme nuevamente la solicitud y la procesaré.`
     });
   }
 });
@@ -977,7 +977,7 @@ app.post('/api/conchi/message', ensureAuthenticated, async (req, res) => {
 app.post('/api/conchi/whatsapp-reply', ensureAuthenticated, (req, res) => {
   const message = String(req.body && req.body.message ? req.body.message : '').trim();
   const user = findUserById(req.user.id);
-  const personality = user ? user.personality || 'affectionate' : 'affectionate';
+  const personality = user ? user.personality || 'executive' : 'executive';
 
   if (!message) {
     return res.status(400).json({ message: 'Necesito el texto del mensaje para redactar una respuesta.' });

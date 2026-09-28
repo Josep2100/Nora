@@ -64,16 +64,110 @@ function cleanReminderTitle(rawText) {
   return cleaned || 'Nuevo recordatorio';
 }
 
+
+function parseNaturalDateTime(text, baseDate = new Date()) {
+  const value = String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const now = new Date(baseDate);
+  let date = new Date(now);
+  let hasDate = false;
+  let hasTime = false;
+
+  if (/pasado manana/.test(value)) {
+    date.setDate(date.getDate() + 2);
+    hasDate = true;
+  } else if (/manana/.test(value)) {
+    date.setDate(date.getDate() + 1);
+    hasDate = true;
+  } else if (/\bhoy\b/.test(value)) {
+    hasDate = true;
+  }
+
+  const weekdays = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+  for (let i = 0; i < weekdays.length; i += 1) {
+    if (new RegExp(`\\b${weekdays[i]}\\b`).test(value)) {
+      const current = date.getDay();
+      let delta = (i - current + 7) % 7;
+      if (delta === 0) delta = 7;
+      date.setDate(date.getDate() + delta);
+      hasDate = true;
+      break;
+    }
+  }
+
+  const monthNames = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const monthMatch = value.match(/\b(?:el\s+)?(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)(?:\s+de\s+(\d{4}))?\b/);
+  if (monthMatch) {
+    const day = Number(monthMatch[1]);
+    const monthName = monthMatch[2] === 'setiembre' ? 'septiembre' : monthMatch[2];
+    const month = monthNames.indexOf(monthName);
+    const year = monthMatch[3] ? Number(monthMatch[3]) : now.getFullYear();
+    date = new Date(year, month, day);
+    if (!monthMatch[3] && date.getTime() < now.getTime()) date.setFullYear(year + 1);
+    hasDate = true;
+  } else {
+    const dayOnly = value.match(/\b(?:el\s+)?(\d{1,2})\b/);
+    if (dayOnly && /\b(el|dia)\b/.test(value)) {
+      const day = Number(dayOnly[1]);
+      if (day >= 1 && day <= 31) {
+        date = new Date(now.getFullYear(), now.getMonth(), day);
+        if (date.getTime() < now.getTime()) date.setMonth(date.getMonth() + 1);
+        hasDate = true;
+      }
+    }
+  }
+
+  const timeMatch = value.match(/\ba(?:\s+las?)?\s+(\d{1,2})(?::(\d{2}))?\s*(?:de\s+la\s+(manana|tarde|noche))?\b/);
+  if (timeMatch) {
+    let hour = Number(timeMatch[1]);
+    const minute = Number(timeMatch[2] || 0);
+    const part = timeMatch[3] || '';
+    if (part === 'tarde' || part === 'noche') {
+      if (hour < 12) hour += 12;
+    } else if (part === 'manana' && hour === 12) {
+      hour = 0;
+    }
+    if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+      date.setHours(hour, minute, 0, 0);
+      hasTime = true;
+    }
+  }
+
+  if (!hasTime && hasDate) date.setHours(9, 0, 0, 0);
+  if (hasTime && !hasDate && date.getTime() <= now.getTime()) date.setDate(date.getDate() + 1);
+  if (!hasDate && !hasTime) return null;
+  return date.toISOString();
+}
+
+function cleanReminderTitleWithSchedule(rawText) {
+  let cleaned = cleanReminderTitle(rawText);
+  cleaned = cleaned.replace(/^que\s+/i, '').trim();
+
+  const scheduled = cleaned.match(/^(?:pasado mañana|pasado manana|mañana|manana|hoy|el\s+\d{1,2}(?:\s+de\s+[a-záéíóúñ]+)?|lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)(?:\s+a(?:\s+las?)?\s+\d{1,2}(?::\d{2})?(?:\s+de\s+la\s+(?:mañana|manana|tarde|noche))?)?\s+(?:quiero\s+|tengo\s+que\s+|debo\s+|voy\s+a\s+|hay\s+que\s+)?(.+)$/i);
+  if (scheduled && scheduled[1]) cleaned = scheduled[1].trim();
+
+  cleaned = cleaned.replace(/\s+(?:mañana|manana|hoy|pasado mañana|pasado manana)\s+(?:a\s+las?\s+\d{1,2}(?::\d{2})?)?\s*$/i, '').trim();
+  cleaned = cleaned.replace(/^(?:que\s+)?(?:quiero|tengo que|debo|voy a|hay que)\s+/i, '').trim();
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
 function parseVoiceReminderFast(voiceTranscript, userName = 'Usuario', personality = 'executive') {
-  const pers = PERSONALITY_PROMPTS[personality] || PERSONALITY_PROMPTS.executive;
-  const cleanTitle = cleanReminderTitle(voiceTranscript);
+  const cleanTitle = cleanReminderTitleWithSchedule(voiceTranscript);
   const category = inferCategory(voiceTranscript);
+  const dueDate = parseNaturalDateTime(voiceTranscript);
+  const dueText = dueDate
+    ? new Date(dueDate).toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })
+    : null;
 
   return {
     title: cleanTitle,
     category,
-    spokenConfirmation: `Registrado con éxito: ${cleanTitle}.`,
-    responseText: `Se ha registrado el recordatorio: **${cleanTitle}**`
+    dueDate,
+    spokenConfirmation: dueText
+      ? `Recordatorio registrado correctamente para ${dueText}: ${cleanTitle}.`
+      : `Recordatorio registrado correctamente: ${cleanTitle}.`,
+    responseText: dueText
+      ? `He registrado el recordatorio **${cleanTitle}** para el **${dueText}**.`
+      : `He registrado el recordatorio **${cleanTitle}** correctamente.`
   };
 }
 
@@ -95,6 +189,7 @@ Devuelve un JSON estrictamente con este formato:
 {
   "title": "Título limpio y conciso de la tarea",
   "category": "salud" | "compras" | "trabajo" | "citas" | "hogar" | "general",
+  "dueDate": "ISO-8601 date/time or null",
   "spokenConfirmation": "Frase formal y profesional de 1 sola oración corta para confirmar la acción",
   "responseText": "Texto breve de confirmación para el chat"
 }
@@ -108,6 +203,7 @@ Devuelve SOLO el JSON sin bloques de código ni markdown.`;
     return {
       title: parsed.title || fast.title,
       category: parsed.category || fast.category,
+      dueDate: parsed.dueDate || fast.dueDate || null,
       spokenConfirmation: parsed.spokenConfirmation || fast.spokenConfirmation,
       responseText: parsed.responseText || fast.responseText
     };

@@ -137,252 +137,161 @@
 
     <!-- MAIN APP SCREEN -->
     <div id="appScreen" class="app-shell hidden">
-      
-      <!-- MOBILE HEADER BAR -->
       <header class="mobile-nav">
-        <button id="menuToggleBtn" class="icon-btn" type="button" aria-label="Abrir panel" title="Menú">
-          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round">
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-        <div class="mobile-brand">
-          <div class="brand-mark mini">N</div>
-          <span>Nora</span>
-          <span class="status-dot"></span>
-        </div>
+        <button id="menuToggleBtn" class="icon-btn" type="button" aria-label="Abrir panel" title="Menú">☰</button>
+        <div class="mobile-brand"><div class="brand-mark mini">N</div><span>Nora</span><span class="status-dot"></span></div>
         <div class="mobile-nav-actions">
-          <button id="podcastBtnMob" class="podcast-mini-btn" type="button" title="Podcast Mañanero">
-            📻
-          </button>
-          <button id="sosBtnMob" class="sos-btn mini" type="button" title="Contacto SOS">
-            🆘
-          </button>
-          <button id="audioToggleBtnMob" class="icon-btn audio-btn" type="button" title="Voz de Nora">
-            🔊
-          </button>
+          <button id="podcastBtnMob" class="icon-btn" type="button" title="Podcast">🎙️</button>
+          <button id="sosBtnMob" class="sos-btn mini" type="button" title="SOS">SOS</button>
+          <button id="audioToggleBtnMob" class="icon-btn audio-btn" type="button" title="Voz">🔊</button>
         </div>
       </header>
 
-      <!-- SIDEBAR / DRAWER -->
       <aside id="appSidebar" class="sidebar">
         <div class="sidebar-header">
           <div class="brand">
             <div class="brand-mark">N</div>
-            <div>
-              <h1>Nora</h1>
-              <p>Tu asistente personal</p>
-            </div>
+            <div><h1>Nora</h1><p>Tu asistente personal</p></div>
           </div>
           <button id="closeDrawerBtn" class="close-drawer-btn" type="button" aria-label="Cerrar panel">✕</button>
         </div>
 
         <div class="user-box">
-          <div class="user-avatar">👤</div>
-          <div class="user-info">
-            <span>Sesión iniciada</span>
-            <strong id="userName">Usuario</strong>
-          </div>
+          <div class="user-avatar">N</div>
+          <div class="user-info"><span>Sesión iniciada</span><strong id="userName">Usuario</strong></div>
         </div>
 
-        <!-- Personality selector -->
-        <div class="personality-box">
-          <span class="section-label">🎭 Personalidad de Nora</span>
-          <div class="personality-pills">
-            <button class="pers-pill active" data-pers="affectionate" title="Dulce, cariñosa y cercana">💖 Cariñosa</button>
-            <button class="pers-pill" data-pers="executive" title="Eficiente, directa y profesional">💼 Ejecutiva</button>
-            <button class="pers-pill" data-pers="cheerful" title="Alegre, motivadora y divertida">😄 Alegre</button>
-          </div>
+        <nav class="dashboard-nav" aria-label="Navegación principal">
+          <button class="dash-nav-item active" data-section="dashboard">⌂ <span>Inicio</span></button>
+          <button class="dash-nav-item" data-section="chat">✦ <span>Chat con Nora</span></button>
+          <button class="dash-nav-item" data-section="agenda">▣ <span>Agenda</span></button>
+          <button class="dash-nav-item" data-section="routines">↻ <span>Rutinas</span></button>
+          <button class="dash-nav-item" data-section="family">♧ <span>Familia</span></button>
+          <button class="dash-nav-item" data-section="wellness">♡ <span>Bienestar</span></button>
+          <button class="dash-nav-item" data-section="shopping">🛒 <span>Lista de compra</span></button>
+          <button class="dash-nav-item" data-section="memory">◈ <span>Baúl de Recuerdos</span></button>
+          <button class="dash-nav-item" data-section="bots">◉ <span>Bots de Nora</span></button>
+        </nav>
+
+        <div class="sidebar-spacer"></div>
+        <div class="sidebar-pro-card">
+          <span class="pro-icon">✦</span>
+          <strong>Nora Pro</strong>
+          <p>Más automatizaciones y personalización.</p>
+          <button id="upgradeBtn" type="button">Mejorar a Pro</button>
         </div>
-
-        <!-- Navigation Tabs: Tareas | Baúl de Recuerdos | Lista Compra -->
-        <div class="main-tabs">
-          <button id="tabTasksBtn" class="main-tab-btn active" type="button">📋 Tareas</button>
-          <button id="tabMemoryBtn" class="main-tab-btn" type="button">🧠 Baúl</button>
-          <button id="tabShoppingBtn" class="main-tab-btn" type="button">🛒 Súper</button>
-        </div>
-
-        <!-- VIEW 1: TASKS PANEL -->
-        <div id="tasksView" class="view-panel active">
-          <div class="tasks-header">
-            <h2>Mis tareas</h2>
-            <span id="taskCountBadge" class="badge">0</span>
-          </div>
-
-          <form id="taskForm" class="task-form">
-            <input id="taskInput" type="text" placeholder="Añadir tarea rápida..." required autocomplete="off" />
-            <input id="taskDueDate" class="task-date-input" type="datetime-local" aria-label="Fecha y hora" title="Fecha y hora del recordatorio" />
-            <select id="taskRecurrence" class="task-repeat-input" aria-label="Repetición" title="Repetición">
-              <option value="">Sin repetir</option>
-              <option value="daily">Cada día</option>
-              <option value="weekly">Cada semana</option>
-              <option value="monthly">Cada mes</option>
-            </select>
-            <button type="submit" title="Guardar tarea">+</button>
-          </form>
-
-          <div class="task-tools">
-            <input id="taskSearch" type="search" placeholder="Buscar tareas..." aria-label="Buscar tareas" />
-            <button id="enableNotificationsBtn" class="tool-btn" type="button">🔔 Activar avisos</button>
-            <button id="exportDataBtn" class="tool-btn" type="button">⬇️ Mis datos</button>
-            <button id="calendarExportBtn" class="tool-btn" type="button">📅 Calendario</button>
-          </div>
-
-          <div class="task-filters">
-            <button class="filter-tab active" data-filter="all">Todas</button>
-            <button class="filter-tab" data-filter="pending">Pendientes</button>
-            <button class="filter-tab" data-filter="completed">Hechas</button>
-          </div>
-
-          <ul id="taskList" class="task-list"></ul>
-        </div>
-
-        <!-- VIEW 2: MEMORY VAULT PANEL (¿Dónde dejé mis cosas?) -->
-        <div id="memoryView" class="view-panel hidden">
-          <div class="tasks-header">
-            <h2>🧠 Baúl de Recuerdos</h2>
-            <span id="memoryCountBadge" class="badge">0</span>
-          </div>
-          <p class="section-desc">Guarda dónde dejas cosas importantes ("Pasaporte en el 2º cajón").</p>
-
-          <form id="memoryForm" class="memory-form">
-            <input id="memoryItemInput" type="text" placeholder="¿Qué objeto/dato? (ej. Pasaporte)" required autocomplete="off" />
-            <input id="memoryLocationInput" type="text" placeholder="¿Dónde está? (ej. En el cajón del escritorio)" required autocomplete="off" />
-            <button type="submit" class="submit-btn-sm">Guardar en el Baúl</button>
-          </form>
-
-          <ul id="memoryList" class="memory-list"></ul>
-        </div>
-
-        <!-- VIEW 3: SHOPPING LIST PANEL (Organizada por pasillos) -->
-        <div id="shoppingView" class="view-panel hidden">
-          <div class="tasks-header">
-            <h2>🛒 Súper por Pasillos</h2>
-            <button id="clearBoughtBtn" class="clean-btn" type="button" title="Limpiar productos comprados">Limpiar hechas</button>
-          </div>
-          <p class="section-desc">Agrupación automática por pasillos del supermercado.</p>
-
-          <form id="shoppingForm" class="task-form">
-            <input id="shoppingInput" type="text" placeholder="Ej. Leche, plátanos, champú..." required autocomplete="off" />
-            <button type="submit" title="Añadir al súper">+</button>
-          </form>
-
-          <div id="shoppingAislesContainer" class="shopping-aisles-container"></div>
-        </div>
-
-        <!-- Quick actions chips -->
-        <div class="quick-actions">
-          <h2>Acciones rápidas</h2>
-          <div class="chip-list">
-            <button class="chip" data-text="¿Qué tengo que hacer hoy?">📋 Mi día</button>
-            <button class="chip" data-text="¿Dónde dejé las llaves?">🧠 ¿Dónde está...?</button>
-            <button class="chip" data-text="Añade leche y tomates a la compra">🛒 Compras</button>
-            <button class="chip" data-text="Ayúdame a redactar una respuesta de WhatsApp">💬 WhatsApp</button>
-          </div>
-        </div>
-
-        <!-- Sidebar footer -->
         <div class="sidebar-footer">
-          <button id="openGuideBtn" class="guide-btn" type="button">
-            💡 Ver Guía de Inicio de Nora
-          </button>
-          <button id="sosSettingsBtn" class="sos-settings-btn" type="button">
-            🚨 Configurar Contacto SOS
-          </button>
-          <button id="botsBtn" class="guide-btn" type="button">🤖 Bots de Nora</button>
-          <button id="pilotBtn" class="guide-btn" type="button">🚀 Solicitar piloto</button>
-          <button id="upgradeBtn" class="guide-btn" type="button">⭐ Mejorar a Nora Plus</button>
-          <button id="accessibilityBtn" class="guide-btn" type="button">👁️ Modo accesible</button>
-          <button id="deleteAccountBtn" class="logout-btn" type="button">Borrar mis datos</button>
-          <button id="installSidebarBtn" class="sidebar-install-btn hidden" type="button">
-            📲 Instalar App en este equipo
-          </button>
+          <button id="sosSettingsBtn" class="side-secondary" type="button">🚨 Contacto SOS</button>
+          <button id="accessibilityBtn" class="side-secondary" type="button">👁️ Modo accesible</button>
+          <button id="installSidebarBtn" class="side-secondary hidden" type="button">📲 Instalar Nora</button>
           <button id="logoutBtn" class="logout-btn" type="button">Cerrar sesión</button>
+          <button id="deleteAccountBtn" class="logout-btn danger" type="button">Borrar mis datos</button>
+        </div>
+
+        <!-- Controles legacy: se mantienen en el DOM para que app.js conserve toda la funcionalidad. -->
+        <div class="legacy-controls" aria-hidden="true">
+          <div class="personality-pills">
+            <button class="pers-pill active" data-pers="affectionate">Cariñosa</button>
+            <button class="pers-pill" data-pers="executive">Ejecutiva</button>
+            <button class="pers-pill" data-pers="cheerful">Alegre</button>
+          </div>
+          <div class="main-tabs">
+            <button id="tabTasksBtn" class="main-tab-btn active" type="button">Tareas</button>
+            <button id="tabMemoryBtn" class="main-tab-btn" type="button">Baúl</button>
+            <button id="tabShoppingBtn" class="main-tab-btn" type="button">Súper</button>
+          </div>
+          <div id="tasksView" class="view-panel active">
+            <div class="tasks-header"><h2>Mis tareas</h2><span id="taskCountBadge" class="badge">0</span></div>
+            <form id="taskForm" class="task-form">
+              <input id="taskInput" type="text" placeholder="Añadir tarea rápida..." required autocomplete="off" />
+              <input id="taskDueDate" class="task-date-input" type="datetime-local" />
+              <select id="taskRecurrence" class="task-repeat-input"><option value="">Sin repetir</option><option value="daily">Cada día</option><option value="weekly">Cada semana</option><option value="monthly">Cada mes</option></select>
+              <button type="submit">+</button>
+            </form>
+            <div class="task-tools"><input id="taskSearch" type="search" placeholder="Buscar tareas..." /><button id="enableNotificationsBtn" class="tool-btn" type="button">Avisos</button><button id="exportDataBtn" class="tool-btn" type="button">Mis datos</button><button id="calendarExportBtn" class="tool-btn" type="button">Calendario</button></div>
+            <div class="task-filters"><button class="filter-tab active" data-filter="all">Todas</button><button class="filter-tab" data-filter="pending">Pendientes</button><button class="filter-tab" data-filter="completed">Hechas</button></div>
+            <ul id="taskList" class="task-list"></ul>
+          </div>
+          <div id="memoryView" class="view-panel hidden"><div class="tasks-header"><h2>Baúl</h2><span id="memoryCountBadge" class="badge">0</span></div><form id="memoryForm" class="memory-form"><input id="memoryItemInput" type="text" required /><input id="memoryLocationInput" type="text" required /><button type="submit" class="submit-btn-sm">Guardar</button></form><ul id="memoryList" class="memory-list"></ul></div>
+          <div id="shoppingView" class="view-panel hidden"><div class="tasks-header"><h2>Súper</h2><button id="clearBoughtBtn" class="clean-btn" type="button">Limpiar hechas</button></div><form id="shoppingForm" class="task-form"><input id="shoppingInput" type="text" required /><button type="submit">+</button></form><div id="shoppingAislesContainer" class="shopping-aisles-container"></div></div>
+          <div class="quick-actions"><button class="chip" data-text="¿Qué tengo que hacer hoy?">Mi día</button><button class="chip" data-text="¿Dónde dejé las llaves?">¿Dónde está?</button><button class="chip" data-text="Añade leche y tomates a la compra">Compras</button><button class="chip" data-text="Ayúdame a redactar una respuesta de WhatsApp">WhatsApp</button></div>
+          <button id="openGuideBtn" type="button">Guía</button><button id="botsBtn" type="button">Bots</button><button id="pilotBtn" type="button">Piloto</button>
         </div>
       </aside>
 
-      <!-- CHAT MAIN PANEL -->
-      <main class="chat-panel">
-        <header class="chat-header">
-          <div class="chat-title-box">
-            <div class="brand-mark mini">N</div>
-            <div>
-              <strong>Nora</strong>
-              <span class="chat-status"><span class="status-dot"></span> Tu asistente personal</span>
-            </div>
-          </div>
-          
-          <div class="chat-header-actions">
-            <!-- Morning Podcast button -->
-            <button id="podcastBtn" class="podcast-btn" type="button" title="Escuchar el resumen hablado del día (60 segundos)">
-              🎙️ Podcast Mañanero
-            </button>
-            <!-- SOS button -->
-            <button id="sosBtn" class="sos-btn" type="button" title="Aviso de Emergencia SOS">
-              🚨 SOS
-            </button>
-            <!-- Audio toggle button -->
-            <button id="audioToggleBtn" class="audio-btn" type="button" title="Activar/Silenciar voz de Nora">
-              🔊 Voz de Nora
-            </button>
-          </div>
+      <main class="dashboard-main">
+        <header class="topbar">
+          <div class="topbar-left"><span class="eyebrow">NORA · ASISTENTE PERSONAL</span><span class="live-status"><i></i> En línea</span></div>
+          <div class="topbar-actions"><label class="search-box">⌕ <input id="dashboardSearch" type="search" placeholder="Buscar en Nora..." /></label><button class="top-icon" type="button" title="Notificaciones">♢</button><button class="top-icon" type="button" title="Tema">☼</button><div class="top-avatar">N</div></div>
         </header>
 
-        <!-- Voice Status Banner -->
-        <div id="voiceStatusBanner" class="voice-status-banner hidden">
-          <div class="voice-wave">
-            <span></span><span></span><span></span><span></span><span></span>
+        <section class="dashboard-hero">
+          <div><p class="hero-kicker">Tu espacio personal</p><h2>¡Hola, <span id="dashboardUserName">Nora</span>! 👋</h2><p>Organiza tu día, recuerda lo importante y habla con Nora cuando quieras.</p></div>
+          <div class="hero-date"><strong id="dashboardDate">Hoy</strong><span>Todo bajo tu control</span></div>
+        </section>
+
+        <section class="feature-grid" aria-label="Funciones principales">
+          <button class="feature-card purple" data-section="agenda"><span class="feature-icon">▣</span><span><b>Agenda</b><small>Organiza tu día</small></span><em>→</em></button>
+          <button class="feature-card blue" data-section="routines"><span class="feature-icon">↻</span><span><b>Rutinas</b><small>Hábitos y recordatorios</small></span><em>→</em></button>
+          <button class="feature-card pink" data-section="family"><span class="feature-icon">♧</span><span><b>Familia</b><small>Tareas y coordinación</small></span><em>→</em></button>
+          <button class="feature-card green" data-section="wellness"><span class="feature-icon">♡</span><span><b>Bienestar</b><small>Hábitos diarios</small></span><em>→</em></button>
+          <button class="feature-card orange" data-section="chat"><span class="feature-icon">✦</span><span><b>Hablar con Nora</b><small>Texto o voz</small></span><em>→</em></button>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="dash-card agenda-card" id="agendaCard">
+            <div class="card-head"><div><span class="card-icon purple-bg">▣</span><div><h3>Tu agenda de hoy</h3><p>Lo que tienes por delante</p></div></div><button class="card-link" data-section="agenda">Ver todo →</button></div>
+            <div id="dashboardAgenda" class="timeline"></div>
+          </article>
+
+          <article class="dash-card tasks-card">
+            <div class="card-head"><div><span class="card-icon orange-bg">✓</span><div><h3>Tareas pendientes</h3><p id="dashboardTaskSummary">Cargando tus tareas...</p></div></div><button class="card-link" data-section="agenda">Ver todas →</button></div>
+            <div id="dashboardTasks" class="mini-list"></div>
+            <form id="dashboardTaskForm" class="quick-task-form"><input id="dashboardTaskInput" type="text" placeholder="Añadir una tarea..." autocomplete="off" /><button type="submit">+</button></form>
+          </article>
+
+          <article class="dash-card chat-card" id="dashboardChat">
+            <div class="card-head"><div><span class="card-icon violet-bg">✦</span><div><h3>Habla con Nora</h3><p>Tu asistente está aquí</p></div></div><button id="dashboardVoiceBtn" class="round-action" type="button" title="Hablar">🎙️</button></div>
+            <div id="dashboardChatMessages" class="dashboard-chat-messages"></div>
+            <div class="chat-quick-actions"><button class="dash-chip" data-prompt="Planifica mi día de hoy">Planifica mi día</button><button class="dash-chip" data-prompt="Recuérdame mis tareas">Mis tareas</button><button class="dash-chip" data-prompt="Organiza la compra del súper">Compra</button></div>
+          </article>
+
+          <article class="dash-card family-card">
+            <div class="card-head"><div><span class="card-icon pink-bg">♧</span><div><h3>Familia</h3><p>Coordinación sencilla</p></div></div><button class="card-link" data-section="family">Abrir →</button></div>
+            <div class="family-preview"><div class="avatar-stack"><span>A</span><span>C</span><span>M</span></div><div><strong>3 personas</strong><small>Sin tareas nuevas compartidas</small></div></div>
+            <button class="outline-action" data-section="family">Preparar una tarea familiar</button>
+          </article>
+
+          <article class="dash-card wellness-card">
+            <div class="card-head"><div><span class="card-icon green-bg">♡</span><div><h3>Bienestar</h3><p>Pequeños hábitos, cada día</p></div></div><button class="card-link" data-section="wellness">Ver más →</button></div>
+            <div class="wellness-metrics"><div><span>💧</span><strong>4/8</strong><small>Agua</small></div><div><span>◔</span><strong>7h 20m</strong><small>Sueño</small></div><div><span>☻</span><strong>Positivo</strong><small>Ánimo</small></div></div>
+          </article>
+
+          <article class="dash-card shopping-card">
+            <div class="card-head"><div><span class="card-icon pink-bg">🛒</span><div><h3>Lista de la compra</h3><p>Organizada para ti</p></div></div><button class="card-link" data-section="shopping">Ver lista →</button></div>
+            <div id="dashboardShopping" class="shopping-preview"></div>
+          </article>
+
+          <article class="dash-card activity-card">
+            <div class="card-head"><div><span class="card-icon blue-bg">◷</span><div><h3>Actividad reciente</h3><p>Lo último que has hecho con Nora</p></div></div><button class="card-link" data-section="chat">Ver todo →</button></div>
+            <div id="dashboardActivity" class="activity-list"></div>
+          </article>
+        </section>
+
+        <section class="dashboard-composer">
+          <div class="composer-inner">
+            <span class="composer-spark">✦</span>
+            <input id="userInput" type="text" placeholder="Escribe tu mensaje a Nora..." autocomplete="off" enterkeyhint="send" />
+            <button id="cameraBtn" class="composer-icon" type="button" title="Cámara">📎</button>
+            <button id="voiceBtn" class="composer-icon" type="button" title="Hablar con Nora">🎙️</button>
+            <button id="sendBtn" class="send-btn" type="submit" form="assistantForm" title="Enviar">➤</button>
           </div>
-          <span id="voiceStatusText">Nora está hablando...</span>
-        </div>
+          <form id="assistantForm" class="dashboard-hidden-form"><input id="chatSubmitProxy" type="submit" tabindex="-1" aria-hidden="true" /></form>
+          <div id="chatMessages" class="dashboard-hidden-messages" aria-live="polite"></div>
+        </section>
 
-        <!-- Messages stream -->
-        <section id="chatMessages" class="chat-messages" aria-live="polite"></section>
-
-        <!-- Hidden Camera / Gallery file input -->
+        <div id="voiceStatusBanner" class="voice-status-banner hidden"><div class="voice-wave"><span></span><span></span><span></span><span></span><span></span></div><span id="voiceStatusText">Nora está hablando...</span></div>
         <input type="file" id="cameraInput" accept="image/*" class="hidden" capture="environment" />
-
-        <!-- COMPOSER BAR (Camera -> Text Input -> Microphone in Middle -> Send Button) -->
-        <div class="composer-container">
-          <form id="assistantForm" class="composer" autocomplete="off">
-            <!-- Camera / Photo Scanner Button -->
-            <button
-              id="cameraBtn"
-              class="camera-btn"
-              type="button"
-              aria-label="Escanear cita o documento con cámara"
-              title="Escanear cita médica, papel o ticket con IA"
-            >
-              📷
-            </button>
-            
-            <!-- Text Input -->
-            <input
-              id="userInput"
-              type="text"
-              placeholder="Escribe a Nora o pulsa el micro..."
-              autocomplete="off"
-              enterkeyhint="send"
-            />
-
-            <!-- Microphone in the middle -->
-            <button
-              id="voiceBtn"
-              class="voice-btn"
-              type="button"
-              aria-label="Hablar con Nora"
-              title="Pulsa para hablar con Nora"
-            >
-              🎙️
-            </button>
-
-            <!-- Send button -->
-            <button id="sendBtn" type="submit" class="send-btn">
-              Enviar
-            </button>
-          </form>
-        </div>
       </main>
     </div>
 
@@ -513,6 +422,7 @@
         <p id="consentMessage" class="auth-message"></p>
       </div>
     </div>
+
 
     <script src="app.js"></script>
   </body>

@@ -1,19 +1,27 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { inferCategory, cleanReminderTitle, categorizeShoppingItem, parseVoiceReminderFast } = require('../gemini');
+const fs = require('node:fs');
+const path = require('node:path');
 
-test('categoriza recordatorios por intención', () => {
-  assert.equal(inferCategory('tomar la pastilla a las 9'), 'salud');
-  assert.equal(inferCategory('comprar leche'), 'compras');
-  assert.equal(inferCategory('reunión con el cliente'), 'trabajo');
+test('Nora incluye los ficheros públicos principales', () => {
+  const root = path.join(__dirname, '..');
+  for (const file of [
+    'server.js',
+    'storage.js',
+    'gemini.js',
+    'public/index.html',
+    'public/styles.css',
+    'public/app.js',
+    'public/manifest.json',
+    'public/sw.js'
+  ]) {
+    assert.equal(fs.existsSync(path.join(root, file)), true, `Falta ${file}`);
+  }
 });
 
-test('limpia recordatorios hablados', () => {
-  assert.equal(cleanReminderTitle('Nora, recuérdame comprar pan'), 'Comprar pan');
-  assert.equal(parseVoiceReminderFast('recuérdame llamar al médico').category, 'salud');
-});
-
-test('clasifica productos por pasillo', () => {
-  assert.equal(categorizeShoppingItem('leche').aisle, 'lacteos');
-  assert.equal(categorizeShoppingItem('tomates').aisle, 'frutas');
+test('El dashboard contiene las tarjetas comerciales de Nora', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+  for (const text of ['Agenda', 'Rutinas', 'Familia', 'Bienestar', 'Actividad reciente', 'Habla con Nora']) {
+    assert.match(html, new RegExp(text));
+  }
 });

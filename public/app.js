@@ -7,7 +7,7 @@ const state = {
   tasks: [],
   memoryVault: [],
   shoppingList: [],
-  personality: 'affectionate',
+  personality: 'executive',
   emergencyContact: { name: '', phone: '' },
   activeFilter: 'all',
   activeMainTab: 'tasks',
@@ -382,7 +382,7 @@ function openOnboardingModal() {
   onboardingModal.classList.remove('hidden');
 
   // Bienvenida hablada dulce de Nora al abrir la guía
-  speakText('¡Hola, cielo! Qué alegría tenerte aquí. Soy Nora, tu asistente personal. Te he preparado esta pequeña guía para que le saques todo el partido.');
+  speakText('Bienvenido/a. Soy Nora, su asistente personal. Le he preparado esta breve guía para que pueda aprovechar las principales funciones.');
 }
 
 function closeOnboardingModal() {
@@ -415,7 +415,7 @@ if (nextSlideBtn) {
       showOnboardingSlide(state.currentOnboardingStep + 1);
     } else {
       closeOnboardingModal();
-      addMessage('assistant', '¡Listo, corazón! Ya conoces lo básico. Pulsa el micrófono cuando quieras y empezamos. 🌸', 'Nora');
+      addMessage('assistant', 'La guía ha finalizado. Puede utilizar el micrófono o escribir su solicitud cuando lo desee.', 'Nora');
     }
   });
 }
@@ -545,9 +545,9 @@ async function handleVoiceInteraction() {
 
         if (actionRequest) {
           const cleanTitle = cleanReminderTitleClient(transcript);
-          let instantSpeech = `¡Anotado, cariño! Ya te he guardado: ${cleanTitle}.`;
+          let instantSpeech = `Registrado correctamente: ${cleanTitle}.`;
           if (state.personality === 'executive') instantSpeech = `Guardado: ${cleanTitle}.`;
-          if (state.personality === 'cheerful') instantSpeech = `¡Hecho, corazón! Apuntadísimo: ${cleanTitle}.`;
+          if (state.personality === 'cheerful') instantSpeech = `Registrado correctamente: ${cleanTitle}.`;
           speakText(instantSpeech);
         } else {
           showVoiceBanner('Nora está preparando tu respuesta...', 'speaking');
@@ -593,7 +593,7 @@ async function handleVoiceInteraction() {
         voiceBtn.textContent = '🎙️';
         hideVoiceBanner();
         if (!recognized) {
-          addMessage('assistant', 'No te he escuchado con claridad, cielo. Pulsa el micro para intentarlo de nuevo.', 'Nora');
+          addMessage('assistant', 'No he podido interpretar el audio con claridad. Pulse el micrófono para intentarlo de nuevo.', 'Nora');
         }
         finishRecognition();
       };
@@ -678,7 +678,7 @@ if (cameraBtn && cameraInput) {
           state.tasks = data.tasks || [];
           renderTasks();
           addMessage('assistant', `📸 **Cita/Documento extraído por Nora:**\n- **Título:** ${data.task.title}\n- **Detalles:** ${data.task.details}`, 'Nora');
-          await speakText(`¡He leído tu papel, cielo! Ya te he guardado la cita: ${data.task.title}`);
+          await speakText(`He analizado el documento y he registrado la cita: ${data.task.title}`);
         } else {
           addMessage('assistant', 'No se pudo leer la información del documento.', 'Nora');
         }
@@ -707,11 +707,7 @@ persPills.forEach(pill => {
       body: JSON.stringify({ personality: pers })
     });
 
-    const msg = pers === 'executive'
-      ? 'Modo Ejecutivo activado. Respuestas directas y máxima eficiencia.'
-      : pers === 'cheerful'
-      ? '¡Modo Alegre activado! ¡Con una gran sonrisa y mucha energía para ti!'
-      : 'Modo Cariñosa activado. Cuidándote en cada momento con todo mi cariño.';
+    const msg = 'Modo profesional activado. Las respuestas serán claras, formales y orientadas a la acción.';
 
     addMessage('assistant', msg, 'Nora');
     speakText(msg);
@@ -804,7 +800,7 @@ if (memoryForm) {
       state.memoryVault = data.memoryVault;
       renderMemory();
     }
-    addMessage('assistant', `🧠 Guardado en tu Baúl: **${item}** en *${location}*.`, 'Nora');
+    addMessage('assistant', `🧠 Registrado en su Baúl: **${item}** en *${location}*.`, 'Nora');
   });
 }
 
@@ -1095,7 +1091,7 @@ async function loadSession() {
       const shortName = data.user.name.split(' ')[0];
       addMessage(
         'assistant',
-        `¡${greeting}, ${shortName} cielo! Soy **Nora**, tu asistente personal. ¿En qué te ayudo hoy? Puedes dictarme cualquier tarea, preguntarme dónde dejaste tus cosas o escuchar tu **Podcast Mañanero**.`,
+        `${greeting}, ${shortName}. Soy **Nora**, su asistente personal. Puedo registrar tareas, organizar su agenda, consultar su memoria y ayudarle con sus actividades diarias.`,
         'Nora'
       );
     }
@@ -1134,7 +1130,7 @@ async function loginWithEmail(email, password) {
   await loadMemory();
   await loadShopping();
   const shortName = state.user.name.split(' ')[0];
-  addMessage('assistant', `Bienvenido de nuevo, ${shortName} cariño. Nora está lista para ayudarte hoy.`, 'Nora');
+  addMessage('assistant', `Bienvenido/a de nuevo, ${shortName}. Nora está preparada para ayudarle.`, 'Nora');
 }
 
 async function signupWithEmail(name, email, password) {
@@ -1337,7 +1333,7 @@ function renderTasks() {
       const due = window.prompt('Fecha ISO opcional (ej. 2026-09-03T09:00):', task.dueDate || '');
       const response = await fetch(`/api/tasks/${task.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, details: task.details || '', dueDate: due || null, recurrence: task.recurrence || null, category: task.category }) });
       const data = await response.json();
-      if (data.tasks) { state.tasks = data.tasks; renderTasks(); addMessage('assistant', 'He actualizado tu tarea, cariño.', 'Nora'); }
+      if (data.tasks) { state.tasks = data.tasks; renderTasks(); addMessage('assistant', 'He actualizado su tarea correctamente.', 'Nora'); }
     });
 
     actionsDiv.appendChild(checkBtn);
@@ -1379,13 +1375,13 @@ taskForm.addEventListener('submit', async (event) => {
     state.tasks = data.tasks;
     renderTasks();
   }
-  addMessage('assistant', `He añadido a tu lista, cielo: “${value}”.`, 'Nora');
+  addMessage('assistant', `He añadido correctamente a su lista: “${value}”.`, 'Nora');
 });
 
 if (taskSearch) taskSearch.addEventListener('input', () => { state.taskSearch = taskSearch.value.trim(); renderTasks(); });
 
 async function requestNotifications() {
-  if (!('Notification' in window)) return addMessage('assistant', 'Este dispositivo no permite avisos del navegador todavía, cielo.', 'Nora');
+  if (!('Notification' in window)) return addMessage('assistant', 'Este dispositivo no permite avisos del navegador.', 'Nora');
   const permission = await Notification.requestPermission();
   if (permission === 'granted') {
     new Notification('Nora está lista', { body: 'Te avisaré de tus recordatorios importantes.' });
@@ -1402,7 +1398,7 @@ if (pilotBtn) pilotBtn.addEventListener('click', async () => {
   if (message === null) return;
   const response = await fetch('/api/pilot/apply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }) });
   const data = await response.json();
-  addMessage('assistant', data.message || 'Hemos registrado tu interés, corazón.', 'Nora');
+  addMessage('assistant', data.message || 'Hemos registrado correctamente su interés.', 'Nora');
 });
 if (upgradeBtn) upgradeBtn.addEventListener('click', () => { window.location.href = '/api/billing/checkout'; });
 
@@ -1556,3 +1552,173 @@ if ('speechSynthesis' in window) {
 
 updateAudioUI();
 loadSession();
+
+// ============================================================================
+// NORA DASHBOARD — puente visual con la lógica existente
+// ============================================================================
+(function initCommercialDashboard(){
+  const $ = (id) => document.getElementById(id);
+  const dashboardUserName = $('dashboardUserName');
+  const dashboardDate = $('dashboardDate');
+  const dashboardTasks = $('dashboardTasks');
+  const dashboardTaskSummary = $('dashboardTaskSummary');
+  const dashboardAgenda = $('dashboardAgenda');
+  const dashboardShopping = $('dashboardShopping');
+  const dashboardActivity = $('dashboardActivity');
+  const dashboardChatMessages = $('dashboardChatMessages');
+  const dashboardTaskForm = $('dashboardTaskForm');
+  const dashboardTaskInput = $('dashboardTaskInput');
+  const dashboardVoiceBtn = $('dashboardVoiceBtn');
+
+  function safeName(){
+    return (state.user?.name || 'Nora').split(' ')[0];
+  }
+
+  function formatHour(value){
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function relativeLabel(value){
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    const diff = Date.now() - d.getTime();
+    const min = Math.round(diff / 60000);
+    if (min < 2) return 'Ahora';
+    if (min < 60) return `Hace ${min} min`;
+    const h = Math.round(min / 60);
+    if (h < 24) return `Hace ${h} h`;
+    return `Hace ${Math.round(h / 24)} d`;
+  }
+
+  function updateHero(){
+    if (dashboardUserName) dashboardUserName.textContent = safeName();
+    if (dashboardDate) {
+      dashboardDate.textContent = new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+    }
+  }
+
+  function updateTasks(){
+    if (!dashboardTasks) return;
+    const pending = (state.tasks || []).filter(t => !t.completed);
+    if (dashboardTaskSummary) dashboardTaskSummary.textContent = pending.length ? `${pending.length} pendiente${pending.length === 1 ? '' : 's'} para ti` : 'No tienes tareas pendientes';
+    dashboardTasks.innerHTML = '';
+    pending.slice(0,5).forEach(task => {
+      const row = document.createElement('div'); row.className='mini-row';
+      row.innerHTML = `<span class="check-circle">○</span><div class="mini-row-content"><strong></strong><small>${task.dueDate ? `⏰ ${formatHour(task.dueDate)}` : 'Sin fecha'}</small></div><span class="tag">${task.category || 'Personal'}</span>`;
+      row.querySelector('strong').textContent = task.title || 'Tarea';
+      dashboardTasks.appendChild(row);
+    });
+    if (!pending.length) dashboardTasks.innerHTML='<div class="empty-state">Todo al día. Nora puede ayudarte a planificar algo nuevo.</div>';
+  }
+
+  function updateAgenda(){
+    if (!dashboardAgenda) return;
+    const withDates = (state.tasks || []).filter(t => !t.completed && t.dueDate).sort((a,b)=>new Date(a.dueDate)-new Date(b.dueDate));
+    dashboardAgenda.innerHTML='';
+    withDates.slice(0,6).forEach(task=>{
+      const row=document.createElement('div'); row.className='timeline-row';
+      row.innerHTML=`<span class="timeline-time">${formatHour(task.dueDate)}</span><span class="timeline-dot"></span><div class="timeline-content"><strong></strong><small>${task.recurrence ? ({daily:'Cada día',weekly:'Cada semana',monthly:'Cada mes'}[task.recurrence] || task.recurrence) : 'Recordatorio personal'}</small></div>`;
+      row.querySelector('strong').textContent=task.title || 'Evento';
+      dashboardAgenda.appendChild(row);
+    });
+    if(!withDates.length) dashboardAgenda.innerHTML='<div class="empty-state">Tu agenda está despejada. Pídele a Nora que añada una cita o recordatorio.</div>';
+  }
+
+  function updateShopping(){
+    if(!dashboardShopping) return;
+    const list=state.shoppingList || [];
+    dashboardShopping.innerHTML='';
+    const active=list.filter(x=>!x.bought).slice(0,5);
+    active.forEach(item=>{
+      const row=document.createElement('div'); row.className='shopping-preview-row';
+      row.innerHTML='<span></span><span></span>';
+      row.children[0].textContent=item.name || item.title || 'Producto';
+      row.children[1].textContent=item.aisle || item.category || 'Lista';
+      dashboardShopping.appendChild(row);
+    });
+    if(!active.length) dashboardShopping.innerHTML='<div class="empty-state">Tu lista está vacía. Puedes decirle a Nora qué necesitas comprar.</div>';
+  }
+
+  function updateActivity(){
+    if(!dashboardActivity) return;
+    const events=[];
+    (state.tasks || []).slice().sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0)).slice(0,3).forEach(t=>events.push({icon:'✓',title:t.completed?'Completaste una tarea':'Creaste una tarea',desc:t.title,time:t.updatedAt||t.createdAt}));
+    (state.memoryVault || []).slice(-2).reverse().forEach(m=>events.push({icon:'◈',title:'Guardaste un recuerdo',desc:`${m.item || m.title || 'Objeto'}${m.location ? ` · ${m.location}`:''}`,time:m.createdAt}));
+    dashboardActivity.innerHTML='';
+    events.slice(0,5).forEach(ev=>{
+      const row=document.createElement('div'); row.className='activity-row';
+      row.innerHTML=`<span class="activity-icon">${ev.icon}</span><div class="activity-copy"><strong></strong><small></small></div><span class="activity-time">${ev.time ? relativeLabel(ev.time) : 'Reciente'}</span>`;
+      row.querySelector('strong').textContent=ev.title;
+      row.querySelector('small').textContent=ev.desc;
+      dashboardActivity.appendChild(row);
+    });
+    if(!events.length) dashboardActivity.innerHTML='<div class="empty-state">Aquí aparecerán tus acciones recientes con Nora.</div>';
+  }
+
+  function refresh(){
+    updateHero(); updateTasks(); updateAgenda(); updateShopping(); updateActivity();
+  }
+
+  function mirrorChat(){
+    if(!dashboardChatMessages || !chatMessages) return;
+    const nodes=[...chatMessages.children];
+    dashboardChatMessages.innerHTML='';
+    nodes.slice(-4).forEach(node=>{
+      const bubble=document.createElement('div');
+      const role=node.classList.contains('user-message') || node.dataset.role==='user' ? 'user' : 'assistant';
+      bubble.className=`dash-chat-bubble ${role}`;
+      bubble.textContent=(node.textContent || '').trim().replace(/^Nora\s*/,'').replace(/^Tú\s*/,'');
+      if(bubble.textContent) dashboardChatMessages.appendChild(bubble);
+    });
+    dashboardChatMessages.scrollTop=dashboardChatMessages.scrollHeight;
+    if(!dashboardChatMessages.children.length){
+      const bubble=document.createElement('div'); bubble.className='dash-chat-bubble assistant'; bubble.textContent='Hola. Soy Nora. ¿Qué desea organizar hoy?'; dashboardChatMessages.appendChild(bubble);
+    }
+  }
+
+  document.querySelectorAll('.dash-nav-item,.feature-card,.card-link,.outline-action').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const section=btn.dataset.section;
+      if(!section) return;
+      document.querySelectorAll('.dash-nav-item').forEach(x=>x.classList.toggle('active',x.dataset.section===section));
+      const map={dashboard:null,chat:'dashboardChat',agenda:'agendaCard',routines:'dashboardChat',family:'dashboardChat',wellness:'dashboardChat',shopping:'dashboardShopping',memory:'dashboardChat',bots:null};
+      if(section==='bots'){ openBots?.(); return; }
+      if(section==='routines'){ if(userInput){userInput.value='Quiero crear una rutina recurrente.'; assistantForm?.requestSubmit();} return; }
+      if(section==='family'){ if(userInput){userInput.value='Quiero preparar una tarea para compartir con mi familia.'; assistantForm?.requestSubmit();} return; }
+      if(section==='wellness'){ if(userInput){userInput.value='Hazme un check-in de bienestar y hábitos, sin diagnosticar.'; assistantForm?.requestSubmit();} return; }
+      if(section==='shopping'){ if(userInput){userInput.value='Organiza mi lista de la compra.'; assistantForm?.requestSubmit();} return; }
+      if(section==='memory'){ if(userInput){userInput.value='Ayúdame a recordar dónde he guardado algo.'; assistantForm?.requestSubmit();} return; }
+      const target=map[section] && $(map[section]);
+      if(target) target.scrollIntoView({behavior:'smooth',block:'center'}); else window.scrollTo({top:0,behavior:'smooth'});
+      if(section==='chat') userInput?.focus();
+    });
+  });
+
+  if(dashboardTaskForm){
+    dashboardTaskForm.addEventListener('submit',async(e)=>{
+      e.preventDefault();
+      const value=(dashboardTaskInput?.value||'').trim();
+      if(!value) return;
+      if(taskInput){taskInput.value=value; taskForm?.requestSubmit();}
+      dashboardTaskInput.value='';
+      setTimeout(refresh,250);
+    });
+  }
+
+  document.querySelectorAll('.dash-chip').forEach(btn=>btn.addEventListener('click',()=>{
+    if(!userInput || !assistantForm) return;
+    userInput.value=btn.dataset.prompt || btn.textContent;
+    assistantForm.requestSubmit();
+  }));
+
+  if(dashboardVoiceBtn) dashboardVoiceBtn.addEventListener('click',()=>voiceBtn?.click());
+  if(userInput){ userInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); assistantForm?.requestSubmit(); } }); }
+
+  if(taskList){new MutationObserver(refresh).observe(taskList,{childList:true,subtree:true});}
+  if(chatMessages){new MutationObserver(mirrorChat).observe(chatMessages,{childList:true,subtree:true});}
+  setInterval(()=>{refresh();mirrorChat();},2500);
+  refresh();
+  setTimeout(mirrorChat,700);
+})();
