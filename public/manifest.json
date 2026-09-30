@@ -1,129 +1,13 @@
 {
-  "name": "Nora - Tu Asistente Personal con IA",
-  "short_name": "Nora",
-  "description": "Nora es tu asistente personal inteligente con control por voz en tiempo real, visión artificial para escanear citas y documentos, lista de la compra organizada por pasillos y baúl de memoria.",
+  "name": "Nora Business",
+  "short_name": "Nora Business",
   "start_url": "/",
-  "id": "com.nora.asistente.personal",
-  "scope": "/",
   "display": "standalone",
-  "display_override": [
-    "window-controls-overlay",
-    "standalone",
-    "minimal-ui",
-    "tabbed"
-  ],
-  "background_color": "#100a1c",
-  "theme_color": "#100a1c",
-  "orientation": "any",
-  "lang": "es",
-  "dir": "ltr",
-  "prefer_related_applications": false,
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
-  "note_taking": {
-    "new_note_url": "/?action=new-task"
-  },
-  "share_target": {
-    "action": "/?action=share",
-    "method": "GET",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  },
-  "protocol_handlers": [
-    {
-      "protocol": "web+nora",
-      "url": "/?action=%s"
-    }
-  ],
-  "file_handlers": [
-    {
-      "action": "/?action=import",
-      "accept": {
-        "text/plain": [".txt"],
-        "application/json": [".json"]
-      }
-    }
-  ],
-  "edge_side_panel": {
-    "preferred_width": 460
-  },
+  "background_color": "#080b14",
+  "theme_color": "#0b1020",
+  "description": "Asistente inteligente para pequeñas empresas.",
   "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/icon.svg",
-      "sizes": "192x192 256x256 384x384 512x512",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    }
-  ],
-  "categories": [
-    "productivity",
-    "lifestyle",
-    "utilities"
-  ],
-  "shortcuts": [
-    {
-      "name": "Hablar con Nora",
-      "short_name": "Voz",
-      "url": "/?action=voice",
-      "description": "Dictar un recordatorio o hablar con Nora",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
-      "name": "Podcast Mañanero",
-      "short_name": "Podcast",
-      "url": "/?action=podcast",
-      "description": "Escuchar el resumen del día con Nora",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Pantalla principal de Nora en PC y escritorio"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Nora en dispositivos móviles y tablets"
-    }
+    {"src":"/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
   ]
 }

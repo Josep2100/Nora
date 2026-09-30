@@ -1,429 +1,1154 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    />
-    <meta name="theme-color" content="#100a1c" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Nora" />
-    <meta name="application-name" content="Nora Tu Asistente Personal" />
-    <meta name="description" content="Nora - Tu Asistente Personal con Inteligencia Artificial, Control por Voz, Baúl de Memoria y Organización Diaria." />
-    
-    <title>Nora | Tu Asistente Personal</title>
-    
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-    <link rel="apple-touch-icon" href="/icon.svg" />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="styles.css" />
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js', { scope: '/' })
-            .then(function(reg) { console.log('Nora SW ready:', reg.scope); })
-            .catch(function(err) { console.warn('Nora SW error:', err); });
-        });
-      }
-    </script>
-  </head>
-  <body>
-    <!-- PWA Install Banner -->
-    <div id="pwaBanner" class="pwa-banner hidden">
-      <div class="pwa-banner-content">
-        <img src="/icon.svg" alt="Nora Icon" class="pwa-mini-icon" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="description" content="Nora Business — asistente inteligente para pequeñas empresas." />
+  <link rel="icon" href="/icon.svg" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/business.css" />
+  <title>Nora Business</title>
+</head>
+<body>
+  <div id="toast" class="toast" role="status"></div>
+
+  <section id="authScreen" class="auth-shell">
+    <div class="auth-visual">
+      <div class="visual-glow glow-one"></div>
+      <div class="visual-glow glow-two"></div>
+
+      <div class="brand-lockup">
+        <div class="brand-mark">N</div>
         <div>
-          <strong>Instalar Nora</strong>
-          <p>Úsala como una app nativa en tu móvil o PC</p>
+          <b>Nora</b>
+          <span>Business</span>
         </div>
       </div>
-      <div class="pwa-banner-actions">
-        <button id="installPwaBtn" class="pwa-install-btn" type="button">Instalar</button>
-        <button id="dismissPwaBtn" class="pwa-dismiss-btn" type="button">✕</button>
+
+      <div class="visual-copy">
+        <span class="eyebrow">ASISTENTE EMPRESARIAL</span>
+        <h1>
+          La información de su empresa,
+          <em>al alcance de una conversación.</em>
+        </h1>
+        <p>
+          Documentos, tareas y conocimiento interno en un único espacio inteligente.
+        </p>
+      </div>
+
+      <div class="visual-card">
+        <span class="card-orb">✦</span>
+        <div>
+          <strong>Pregunte a Nora</strong>
+          <small>“¿Qué dice nuestro procedimiento de vacaciones?”</small>
+        </div>
+        <span class="arrow">→</span>
+      </div>
+
+      <div class="trust-row">
+        <span>🔐 Datos aislados</span>
+        <span>⚡ Respuestas rápidas</span>
+        <span>🏢 Diseñado para empresas</span>
       </div>
     </div>
 
-    <!-- Drawer Overlay for Mobile -->
-    <div id="drawerOverlay" class="drawer-overlay hidden"></div>
+    <div class="auth-panel">
+      <div class="auth-panel-inner">
 
-    <!-- AUTHENTICATION SCREEN -->
-    <div id="authScreen" class="auth-screen">
-      <div class="auth-card">
-        <div class="brand-box">
-          <div class="brand-mark">
-            <span>N</span>
-            <div class="sparkle-dot"></div>
-          </div>
+        <div class="mobile-brand">
+          <div class="brand-mark small">N</div>
           <div>
-            <h1>Nora</h1>
-            <p>Tu asistente personal</p>
+            <b>Nora</b>
+            <span>Business</span>
           </div>
+        </div>
+
+        <div class="auth-heading">
+          <span class="eyebrow">NORA BUSINESS</span>
+          <h2 id="authTitle">Bienvenido de nuevo</h2>
+          <p id="authSubtitle">
+            Acceda al espacio inteligente de su empresa.
+          </p>
         </div>
 
         <div class="auth-tabs">
-          <button id="showLogin" class="tab active" type="button">Iniciar sesión</button>
-          <button id="showRegister" class="tab" type="button">Registrarse</button>
+          <button id="showLogin" class="active">Iniciar sesión</button>
+          <button id="showRegister">Crear cuenta</button>
         </div>
 
-        <!-- LOGIN FORM -->
         <form id="loginForm" class="auth-form">
           <label>
-            <span>Correo electrónico</span>
-            <input type="email" id="loginEmail" placeholder="tu@correo.com" required autocomplete="email" />
+            Correo electrónico
+            <input
+              id="loginEmail"
+              type="email"
+              autocomplete="email"
+              placeholder="nombre@empresa.com"
+              required
+            />
           </label>
+
           <label>
-            <span>Contraseña</span>
-            <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password" />
+            Contraseña
+            <input
+              id="loginPassword"
+              type="password"
+              autocomplete="current-password"
+              placeholder="••••••••"
+              required
+            />
           </label>
-          <button type="submit" class="submit-btn">Entrar con Nora</button>
+
+          <button class="primary-btn" type="submit">
+            Entrar en Nora <span>→</span>
+          </button>
         </form>
 
-        <!-- SIGNUP FORM CON REQUISITOS ESTRICTOS DE SEGURIDAD -->
         <form id="signupForm" class="auth-form hidden">
           <label>
-            <span>Nombre completo</span>
-            <input type="text" id="signupName" placeholder="¿Cómo te llamas?" required autocomplete="name" />
-          </label>
-          <label>
-            <span>Correo electrónico</span>
-            <input type="email" id="signupEmail" placeholder="tu@correo.com" required autocomplete="email" />
-          </label>
-          <label>
-            <span>Contraseña segura</span>
-            <input type="password" id="signupPassword" placeholder="Crea una contraseña segura" required autocomplete="new-password" />
-          </label>
-          <label class="consent-row">
-            <input type="checkbox" id="privacyConsent" required />
-            <span>Acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a> y el tratamiento de mis datos para usar Nora.</span>
+            Nombre completo
+            <input
+              id="signupName"
+              type="text"
+              autocomplete="name"
+              placeholder="Su nombre"
+              required
+            />
           </label>
 
-          <!-- 🔒 Medidor y Checklist de Requisitos de Contraseña -->
-          <div class="password-meter-box">
-            <div class="password-meter-bar">
-              <div id="passwordMeterFill" class="meter-fill"></div>
-            </div>
-            <span id="passwordMeterLabel" class="meter-label">Introduce una contraseña segura</span>
-            
-            <ul class="pwd-requirements">
-              <li id="reqLength" class="req-item"><span class="req-icon">○</span> Mínimo 8 caracteres</li>
-              <li id="reqUpper" class="req-item"><span class="req-icon">○</span> Al menos 1 mayúscula (A-Z)</li>
-              <li id="reqNumber" class="req-item"><span class="req-icon">○</span> Al menos 1 número (0-9)</li>
-              <li id="reqSpecial" class="req-item"><span class="req-icon">○</span> 1 carácter especial (@, $, !, %, #...)</li>
-            </ul>
+          <label>
+            Correo profesional
+            <input
+              id="signupEmail"
+              type="email"
+              autocomplete="email"
+              placeholder="nombre@empresa.com"
+              required
+            />
+          </label>
+
+          <label>
+            Contraseña
+            <input
+              id="signupPassword"
+              type="password"
+              autocomplete="new-password"
+              placeholder="Mínimo 8 caracteres"
+              required
+            />
+          </label>
+
+          <div id="passwordHint" class="password-hint">
+            Use mayúsculas, minúsculas, números y un carácter especial.
           </div>
 
-          <button id="signupSubmitBtn" type="submit" class="submit-btn">Crear mi cuenta en Nora</button>
+          <label class="check-row">
+            <input id="privacyConsent" type="checkbox" required />
+            <span>
+              Acepto la
+              <a
+                href="/privacidad.html"
+                target="_blank"
+                rel="noopener"
+              >
+                política de privacidad
+              </a>
+              y los
+              <a
+                href="/terminos.html"
+                target="_blank"
+                rel="noopener"
+              >
+                términos
+              </a>.
+            </span>
+          </label>
+
+          <button class="primary-btn" type="submit">
+            Crear espacio empresarial <span>→</span>
+          </button>
         </form>
 
-        <div class="auth-divider">
-          <span>o</span>
-        </div>
-
-        <button id="googleLoginBtn" class="google-btn" type="button">
-          <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-          </svg>
+        <button
+          id="googleLoginBtn"
+          class="secondary-btn"
+          type="button"
+        >
           Continuar con Google
         </button>
 
-        <p id="authMessage" class="auth-message"></p>
+        <p id="authMessage" class="form-message"></p>
+
+        <p class="auth-foot">
+          Nora Business está en fase piloto. Puede probar el producto y validar
+          su utilidad antes de contratar un plan.
+        </p>
+
       </div>
     </div>
+  </section>
 
-    <!-- MAIN APP SCREEN -->
-    <div id="appScreen" class="app-shell hidden">
-      <header class="mobile-nav">
-        <button id="menuToggleBtn" class="icon-btn" type="button" aria-label="Abrir panel" title="Menú">☰</button>
-        <div class="mobile-brand"><div class="brand-mark mini">N</div><span>Nora</span><span class="status-dot"></span></div>
-        <div class="mobile-nav-actions">
-          <button id="podcastBtnMob" class="icon-btn" type="button" title="Podcast">🎙️</button>
-          <button id="sosBtnMob" class="sos-btn mini" type="button" title="SOS">SOS</button>
-          <button id="audioToggleBtnMob" class="icon-btn audio-btn" type="button" title="Voz">🔊</button>
+  <section id="appScreen" class="app-shell hidden">
+
+    <aside class="sidebar" id="sidebar">
+
+      <div class="sidebar-top">
+        <div class="brand-lockup">
+          <div class="brand-mark">N</div>
+          <div>
+            <b>Nora</b>
+            <span>Business</span>
+          </div>
+        </div>
+
+        <button
+          id="closeSidebar"
+          class="icon-btn mobile-only"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="company-mini">
+        <div
+          class="company-avatar"
+          id="companyAvatar"
+        >
+          N
+        </div>
+
+        <div>
+          <strong id="companyNameSide">
+            Mi empresa
+          </strong>
+          <span id="companySectorSide">
+            Servicios profesionales
+          </span>
+        </div>
+      </div>
+
+      <nav class="nav-list">
+        <button
+          class="nav-item active"
+          data-view="overview"
+        >
+          <span>⌂</span>
+          Resumen
+        </button>
+
+        <button
+          class="nav-item"
+          data-view="knowledge"
+        >
+          <span>▤</span>
+          Conocimiento
+        </button>
+
+        <button
+          class="nav-item"
+          data-view="tasks"
+        >
+          <span>✓</span>
+          Tareas
+        </button>
+
+        <button
+          class="nav-item"
+          data-view="team"
+        >
+          <span>♙</span>
+          Equipo
+        </button>
+
+        <button
+          class="nav-item"
+          data-view="activity"
+        >
+          <span>◷</span>
+          Actividad
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+
+        <button
+          id="companySettingsBtn"
+          class="side-btn"
+        >
+          ⚙ Configuración
+        </button>
+
+        <button
+          id="logoutBtn"
+          class="side-btn danger-text"
+        >
+          ↪ Cerrar sesión
+        </button>
+
+      </div>
+    </aside>
+
+    <div
+      id="mobileOverlay"
+      class="mobile-overlay hidden"
+    ></div>
+
+    <main class="main-shell">
+
+      <header class="topbar">
+
+        <button
+          id="openSidebar"
+          class="icon-btn mobile-only"
+        >
+          ☰
+        </button>
+
+        <div class="topbar-title">
+          <span id="viewEyebrow">
+            ESPACIO EMPRESARIAL
+          </span>
+
+          <h2 id="viewTitle">
+            Resumen
+          </h2>
+        </div>
+
+        <div class="topbar-actions">
+
+          <button
+            id="quickKnowledgeBtn"
+            class="top-action"
+          >
+            ＋ Documento
+          </button>
+
+          <div class="user-chip">
+            <div id="userAvatar">U</div>
+            <span id="userNameTop">
+              Usuario
+            </span>
+          </div>
+
         </div>
       </header>
 
-      <aside id="appSidebar" class="sidebar">
-        <div class="sidebar-header">
-          <div class="brand">
-            <div class="brand-mark">N</div>
-            <div><h1>Nora</h1><p>Tu asistente personal</p></div>
+      <div class="content-wrap">
+
+        <section
+          id="overviewView"
+          class="view active"
+        >
+
+          <div class="hero">
+
+            <div>
+              <span class="eyebrow">
+                BUENAS TARDES
+              </span>
+
+              <h1>
+                Bienvenido a
+                <span id="companyNameHero">
+                  su empresa
+                </span>.
+              </h1>
+
+              <p>
+                Nora centraliza el conocimiento y le ayuda a convertir
+                información en acciones.
+              </p>
+            </div>
+
+            <div class="hero-orb">
+              <div>✦</div>
+              <small>Nora AI</small>
+            </div>
+
           </div>
-          <button id="closeDrawerBtn" class="close-drawer-btn" type="button" aria-label="Cerrar panel">✕</button>
-        </div>
 
-        <div class="user-box">
-          <div class="user-avatar">N</div>
-          <div class="user-info"><span>Sesión iniciada</span><strong id="userName">Usuario</strong></div>
-        </div>
+          <div class="stat-grid">
 
-        <nav class="dashboard-nav" aria-label="Navegación principal">
-          <button class="dash-nav-item active" data-section="dashboard">⌂ <span>Inicio</span></button>
-          <button class="dash-nav-item" data-section="chat">✦ <span>Chat con Nora</span></button>
-          <button class="dash-nav-item" data-section="agenda">▣ <span>Agenda</span></button>
-          <button class="dash-nav-item" data-section="routines">↻ <span>Rutinas</span></button>
-          <button class="dash-nav-item" data-section="family">♧ <span>Familia</span></button>
-          <button class="dash-nav-item" data-section="wellness">♡ <span>Bienestar</span></button>
-          <button class="dash-nav-item" data-section="shopping">🛒 <span>Lista de compra</span></button>
-          <button class="dash-nav-item" data-section="memory">◈ <span>Baúl de Recuerdos</span></button>
-          <button class="dash-nav-item" data-section="bots">◉ <span>Bots de Nora</span></button>
-        </nav>
+            <article class="stat-card">
+              <span class="stat-icon purple">▤</span>
 
-        <div class="sidebar-spacer"></div>
-        <div class="sidebar-pro-card">
-          <span class="pro-icon">✦</span>
-          <strong>Nora Pro</strong>
-          <p>Más automatizaciones y personalización.</p>
-          <button id="upgradeBtn" type="button">Mejorar a Pro</button>
-        </div>
-        <div class="sidebar-footer">
-          <button id="sosSettingsBtn" class="side-secondary" type="button">🚨 Contacto SOS</button>
-          <button id="accessibilityBtn" class="side-secondary" type="button">👁️ Modo accesible</button>
-          <button id="installSidebarBtn" class="side-secondary hidden" type="button">📲 Instalar Nora</button>
-          <button id="logoutBtn" class="logout-btn" type="button">Cerrar sesión</button>
-          <button id="deleteAccountBtn" class="logout-btn danger" type="button">Borrar mis datos</button>
-        </div>
+              <div>
+                <small>Conocimiento</small>
+                <strong id="statKnowledge">0</strong>
+                <span>documentos</span>
+              </div>
+            </article>
 
-        <!-- Controles legacy: se mantienen en el DOM para que app.js conserve toda la funcionalidad. -->
-        <div class="legacy-controls" aria-hidden="true">
-          <div class="personality-pills">
-            <button class="pers-pill active" data-pers="affectionate">Cariñosa</button>
-            <button class="pers-pill" data-pers="executive">Ejecutiva</button>
-            <button class="pers-pill" data-pers="cheerful">Alegre</button>
+            <article class="stat-card">
+              <span class="stat-icon blue">✓</span>
+
+              <div>
+                <small>Tareas abiertas</small>
+                <strong id="statOpenTasks">0</strong>
+                <span>pendientes</span>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-icon green">♙</span>
+
+              <div>
+                <small>Equipo</small>
+                <strong id="statMembers">1</strong>
+                <span>miembro activo</span>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-icon orange">◷</span>
+
+              <div>
+                <small>Plan</small>
+                <strong class="plan-text">
+                  Piloto
+                </strong>
+                <span>sin compromiso</span>
+              </div>
+            </article>
+
           </div>
-          <div class="main-tabs">
-            <button id="tabTasksBtn" class="main-tab-btn active" type="button">Tareas</button>
-            <button id="tabMemoryBtn" class="main-tab-btn" type="button">Baúl</button>
-            <button id="tabShoppingBtn" class="main-tab-btn" type="button">Súper</button>
-          </div>
-          <div id="tasksView" class="view-panel active">
-            <div class="tasks-header"><h2>Mis tareas</h2><span id="taskCountBadge" class="badge">0</span></div>
-            <form id="taskForm" class="task-form">
-              <input id="taskInput" type="text" placeholder="Añadir tarea rápida..." required autocomplete="off" />
-              <input id="taskDueDate" class="task-date-input" type="datetime-local" />
-              <select id="taskRecurrence" class="task-repeat-input"><option value="">Sin repetir</option><option value="daily">Cada día</option><option value="weekly">Cada semana</option><option value="monthly">Cada mes</option></select>
-              <button type="submit">+</button>
-            </form>
-            <div class="task-tools"><input id="taskSearch" type="search" placeholder="Buscar tareas..." /><button id="enableNotificationsBtn" class="tool-btn" type="button">Avisos</button><button id="exportDataBtn" class="tool-btn" type="button">Mis datos</button><button id="calendarExportBtn" class="tool-btn" type="button">Calendario</button></div>
-            <div class="task-filters"><button class="filter-tab active" data-filter="all">Todas</button><button class="filter-tab" data-filter="pending">Pendientes</button><button class="filter-tab" data-filter="completed">Hechas</button></div>
-            <ul id="taskList" class="task-list"></ul>
-          </div>
-          <div id="memoryView" class="view-panel hidden"><div class="tasks-header"><h2>Baúl</h2><span id="memoryCountBadge" class="badge">0</span></div><form id="memoryForm" class="memory-form"><input id="memoryItemInput" type="text" required /><input id="memoryLocationInput" type="text" required /><button type="submit" class="submit-btn-sm">Guardar</button></form><ul id="memoryList" class="memory-list"></ul></div>
-          <div id="shoppingView" class="view-panel hidden"><div class="tasks-header"><h2>Súper</h2><button id="clearBoughtBtn" class="clean-btn" type="button">Limpiar hechas</button></div><form id="shoppingForm" class="task-form"><input id="shoppingInput" type="text" required /><button type="submit">+</button></form><div id="shoppingAislesContainer" class="shopping-aisles-container"></div></div>
-          <div class="quick-actions"><button class="chip" data-text="¿Qué tengo que hacer hoy?">Mi día</button><button class="chip" data-text="¿Dónde dejé las llaves?">¿Dónde está?</button><button class="chip" data-text="Añade leche y tomates a la compra">Compras</button><button class="chip" data-text="Ayúdame a redactar una respuesta de WhatsApp">WhatsApp</button></div>
-          <button id="openGuideBtn" type="button">Guía</button><button id="botsBtn" type="button">Bots</button><button id="pilotBtn" type="button">Piloto</button>
-        </div>
-      </aside>
 
-      <main class="dashboard-main">
-        <header class="topbar">
-          <div class="topbar-left"><span class="eyebrow">NORA · ASISTENTE PERSONAL</span><span class="live-status"><i></i> En línea</span></div>
-          <div class="topbar-actions"><label class="search-box">⌕ <input id="dashboardSearch" type="search" placeholder="Buscar en Nora..." /></label><button class="top-icon" type="button" title="Notificaciones">♢</button><button class="top-icon" type="button" title="Tema">☼</button><div class="top-avatar">N</div></div>
-        </header>
+          <div class="overview-grid">
 
-        <section class="dashboard-hero">
-          <div><p class="hero-kicker">Tu espacio personal</p><h2>¡Hola, <span id="dashboardUserName">Nora</span>! 👋</h2><p>Organiza tu día, recuerda lo importante y habla con Nora cuando quieras.</p></div>
-          <div class="hero-date"><strong id="dashboardDate">Hoy</strong><span>Todo bajo tu control</span></div>
+            <article class="panel chat-panel">
+
+              <div class="panel-head">
+
+                <div>
+
+                  <span class="section-icon">
+                    ✦
+                  </span>
+
+                  <div>
+                    <h3>
+                      Pregunte a Nora
+                    </h3>
+
+                    <p>
+                      Consulta procedimientos y conocimiento interno.
+                    </p>
+                  </div>
+
+                </div>
+
+                <span class="online-dot">
+                  En línea
+                </span>
+
+              </div>
+
+              <div
+                id="chatMessages"
+                class="chat-messages"
+              >
+                <div class="message nora">
+
+                  <div class="message-avatar">
+                    N
+                  </div>
+
+                  <div>
+                    <span class="message-label">
+                      Nora
+                    </span>
+
+                    <p>
+                      Hola. Estoy lista para ayudarle con la información
+                      de su empresa.
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+
+              <div class="suggestions">
+
+                <button
+                  data-prompt="¿Qué documentos tenemos disponibles?"
+                >
+                  Documentos disponibles
+                </button>
+
+                <button
+                  data-prompt="¿Qué tareas están pendientes?"
+                >
+                  Tareas pendientes
+                </button>
+
+                <button
+                  data-prompt="¿Qué sabes de la empresa?"
+                >
+                  Qué sabes
+                </button>
+
+              </div>
+
+              <form
+                id="chatForm"
+                class="chat-composer"
+              >
+                <input
+                  id="chatInput"
+                  autocomplete="off"
+                  placeholder="Pregunte a Nora..."
+                />
+
+                <button type="submit">
+                  ↑
+                </button>
+              </form>
+
+              <div class="chat-note">
+                Nora utiliza únicamente la información disponible
+                en su espacio empresarial.
+              </div>
+
+            </article>
+
+            <article class="panel task-panel">
+
+              <div class="panel-head">
+
+                <div>
+
+                  <span class="section-icon blue-icon">
+                    ✓
+                  </span>
+
+                  <div>
+                    <h3>
+                      Próximas tareas
+                    </h3>
+
+                    <p>
+                      Lo que necesita atención.
+                    </p>
+                  </div>
+
+                </div>
+
+                <button
+                  class="text-btn"
+                  data-view="tasks"
+                >
+                  Ver todas
+                </button>
+
+              </div>
+
+              <div
+                id="dashboardTasks"
+                class="task-list"
+              ></div>
+
+              <button
+                id="quickTaskBtn"
+                class="outline-btn"
+              >
+                ＋ Añadir tarea
+              </button>
+
+            </article>
+
+          </div>
+
+          <div class="overview-grid bottom-grid">
+
+            <article class="panel">
+
+              <div class="panel-head">
+
+                <div>
+
+                  <span class="section-icon green-icon">
+                    ▤
+                  </span>
+
+                  <div>
+                    <h3>
+                      Base de conocimiento
+                    </h3>
+
+                    <p>
+                      Documentos que Nora puede consultar.
+                    </p>
+                  </div>
+
+                </div>
+
+                <button
+                  class="text-btn"
+                  data-view="knowledge"
+                >
+                  Gestionar
+                </button>
+
+              </div>
+
+              <div
+                id="dashboardKnowledge"
+                class="knowledge-preview"
+              ></div>
+
+            </article>
+
+            <article class="panel">
+
+              <div class="panel-head">
+
+                <div>
+
+                  <span class="section-icon orange-icon">
+                    ◷
+                  </span>
+
+                  <div>
+                    <h3>
+                      Actividad reciente
+                    </h3>
+
+                    <p>
+                      Acciones del espacio.
+                    </p>
+                  </div>
+
+                </div>
+
+                <button
+                  class="text-btn"
+                  data-view="activity"
+                >
+                  Ver todo
+                </button>
+
+              </div>
+
+              <div
+                id="dashboardActivity"
+                class="activity-list"
+              ></div>
+
+            </article>
+
+          </div>
+
         </section>
 
-        <section class="feature-grid" aria-label="Funciones principales">
-          <button class="feature-card purple" data-section="agenda"><span class="feature-icon">▣</span><span><b>Agenda</b><small>Organiza tu día</small></span><em>→</em></button>
-          <button class="feature-card blue" data-section="routines"><span class="feature-icon">↻</span><span><b>Rutinas</b><small>Hábitos y recordatorios</small></span><em>→</em></button>
-          <button class="feature-card pink" data-section="family"><span class="feature-icon">♧</span><span><b>Familia</b><small>Tareas y coordinación</small></span><em>→</em></button>
-          <button class="feature-card green" data-section="wellness"><span class="feature-icon">♡</span><span><b>Bienestar</b><small>Hábitos diarios</small></span><em>→</em></button>
-          <button class="feature-card orange" data-section="chat"><span class="feature-icon">✦</span><span><b>Hablar con Nora</b><small>Texto o voz</small></span><em>→</em></button>
+        <section
+          id="knowledgeView"
+          class="view"
+        >
+
+          <div class="page-heading">
+
+            <div>
+
+              <span class="eyebrow">
+                BASE DE CONOCIMIENTO
+              </span>
+
+              <h1>
+                Información de la empresa
+              </h1>
+
+              <p>
+                Añada procedimientos, manuales, preguntas frecuentes y
+                documentación para que Nora pueda consultarlos.
+              </p>
+
+            </div>
+
+            <button
+              id="addKnowledgeBtn"
+              class="primary-btn compact"
+            >
+              ＋ Añadir documento
+            </button>
+
+          </div>
+
+          <div class="notice">
+
+            <span>🔐</span>
+
+            <div>
+
+              <strong>
+                Diseñado con privacidad en mente
+              </strong>
+
+              <p>
+                Los documentos están asociados a su espacio empresarial.
+                No comparta claves, contraseñas ni secretos en la base
+                de conocimiento.
+              </p>
+
+            </div>
+
+          </div>
+
+          <div
+            id="knowledgeGrid"
+            class="knowledge-grid"
+          ></div>
+
         </section>
 
-        <section class="dashboard-grid">
-          <article class="dash-card agenda-card" id="agendaCard">
-            <div class="card-head"><div><span class="card-icon purple-bg">▣</span><div><h3>Tu agenda de hoy</h3><p>Lo que tienes por delante</p></div></div><button class="card-link" data-section="agenda">Ver todo →</button></div>
-            <div id="dashboardAgenda" class="timeline"></div>
-          </article>
+        <section
+          id="tasksView"
+          class="view"
+        >
 
-          <article class="dash-card tasks-card">
-            <div class="card-head"><div><span class="card-icon orange-bg">✓</span><div><h3>Tareas pendientes</h3><p id="dashboardTaskSummary">Cargando tus tareas...</p></div></div><button class="card-link" data-section="agenda">Ver todas →</button></div>
-            <div id="dashboardTasks" class="mini-list"></div>
-            <form id="dashboardTaskForm" class="quick-task-form"><input id="dashboardTaskInput" type="text" placeholder="Añadir una tarea..." autocomplete="off" /><button type="submit">+</button></form>
-          </article>
+          <div class="page-heading">
 
-          <article class="dash-card chat-card" id="dashboardChat">
-            <div class="card-head"><div><span class="card-icon violet-bg">✦</span><div><h3>Habla con Nora</h3><p>Tu asistente está aquí</p></div></div><button id="dashboardVoiceBtn" class="round-action" type="button" title="Hablar">🎙️</button></div>
-            <div id="dashboardChatMessages" class="dashboard-chat-messages"></div>
-            <div class="chat-quick-actions"><button class="dash-chip" data-prompt="Planifica mi día de hoy">Planifica mi día</button><button class="dash-chip" data-prompt="Recuérdame mis tareas">Mis tareas</button><button class="dash-chip" data-prompt="Organiza la compra del súper">Compra</button></div>
-          </article>
+            <div>
 
-          <article class="dash-card family-card">
-            <div class="card-head"><div><span class="card-icon pink-bg">♧</span><div><h3>Familia</h3><p>Coordinación sencilla</p></div></div><button class="card-link" data-section="family">Abrir →</button></div>
-            <div class="family-preview"><div class="avatar-stack"><span>A</span><span>C</span><span>M</span></div><div><strong>3 personas</strong><small>Sin tareas nuevas compartidas</small></div></div>
-            <button class="outline-action" data-section="family">Preparar una tarea familiar</button>
-          </article>
+              <span class="eyebrow">
+                GESTIÓN
+              </span>
 
-          <article class="dash-card wellness-card">
-            <div class="card-head"><div><span class="card-icon green-bg">♡</span><div><h3>Bienestar</h3><p>Pequeños hábitos, cada día</p></div></div><button class="card-link" data-section="wellness">Ver más →</button></div>
-            <div class="wellness-metrics"><div><span>💧</span><strong>4/8</strong><small>Agua</small></div><div><span>◔</span><strong>7h 20m</strong><small>Sueño</small></div><div><span>☻</span><strong>Positivo</strong><small>Ánimo</small></div></div>
-          </article>
+              <h1>
+                Tareas del espacio
+              </h1>
 
-          <article class="dash-card shopping-card">
-            <div class="card-head"><div><span class="card-icon pink-bg">🛒</span><div><h3>Lista de la compra</h3><p>Organizada para ti</p></div></div><button class="card-link" data-section="shopping">Ver lista →</button></div>
-            <div id="dashboardShopping" class="shopping-preview"></div>
-          </article>
+              <p>
+                Organice acciones internas y mantenga el trabajo visible.
+              </p>
 
-          <article class="dash-card activity-card">
-            <div class="card-head"><div><span class="card-icon blue-bg">◷</span><div><h3>Actividad reciente</h3><p>Lo último que has hecho con Nora</p></div></div><button class="card-link" data-section="chat">Ver todo →</button></div>
-            <div id="dashboardActivity" class="activity-list"></div>
-          </article>
+            </div>
+
+            <button
+              id="addTaskBtn"
+              class="primary-btn compact"
+            >
+              ＋ Nueva tarea
+            </button>
+
+          </div>
+
+          <div
+            id="fullTaskList"
+            class="full-task-list"
+          ></div>
+
         </section>
 
-        <section class="dashboard-composer">
-          <div class="composer-inner">
-            <span class="composer-spark">✦</span>
-            <input id="userInput" type="text" placeholder="Escribe tu mensaje a Nora..." autocomplete="off" enterkeyhint="send" />
-            <button id="cameraBtn" class="composer-icon" type="button" title="Cámara">📎</button>
-            <button id="voiceBtn" class="composer-icon" type="button" title="Hablar con Nora">🎙️</button>
-            <button id="sendBtn" class="send-btn" type="submit" form="assistantForm" title="Enviar">➤</button>
+        <section
+          id="teamView"
+          class="view"
+        >
+
+          <div class="page-heading">
+
+            <div>
+
+              <span class="eyebrow">
+                EQUIPO
+              </span>
+
+              <h1>
+                Miembros del espacio
+              </h1>
+
+              <p>
+                Gestione quién tiene acceso al entorno empresarial.
+              </p>
+
+            </div>
+
+            <button
+              id="inviteBtn"
+              class="secondary-btn compact"
+              disabled
+            >
+              ＋ Invitar miembro
+            </button>
+
           </div>
-          <form id="assistantForm" class="dashboard-hidden-form"><input id="chatSubmitProxy" type="submit" tabindex="-1" aria-hidden="true" /></form>
-          <div id="chatMessages" class="dashboard-hidden-messages" aria-live="polite"></div>
+
+          <div class="notice">
+
+            <span>🚧</span>
+
+            <div>
+
+              <strong>
+                Invitaciones multiusuario en preparación
+              </strong>
+
+              <p>
+                Esta versión piloto mantiene el espacio aislado por cuenta.
+                La gestión de invitaciones y permisos por empleado será
+                la siguiente fase.
+              </p>
+
+            </div>
+
+          </div>
+
+          <div
+            id="teamList"
+            class="team-list"
+          ></div>
+
         </section>
 
-        <div id="voiceStatusBanner" class="voice-status-banner hidden"><div class="voice-wave"><span></span><span></span><span></span><span></span><span></span></div><span id="voiceStatusText">Nora está hablando...</span></div>
-        <input type="file" id="cameraInput" accept="image/*" class="hidden" capture="environment" />
-      </main>
-    </div>
+        <section
+          id="activityView"
+          class="view"
+        >
 
-    <!-- 🌸 MODAL DE ONBOARDING / MINI-GUÍA DE BIENVENIDA DE NORA -->
-    <div id="onboardingModal" class="modal-overlay hidden">
-      <div class="onboarding-card">
-        <div class="onboarding-header">
-          <div class="brand-mark mini">N</div>
-          <div class="step-indicator">
-            <span id="stepDot1" class="step-dot active"></span>
-            <span id="stepDot2" class="step-dot"></span>
-            <span id="stepDot3" class="step-dot"></span>
-            <span id="stepDot4" class="step-dot"></span>
+          <div class="page-heading">
+
+            <div>
+
+              <span class="eyebrow">
+                AUDITORÍA BÁSICA
+              </span>
+
+              <h1>
+                Actividad reciente
+              </h1>
+
+              <p>
+                Un resumen de las acciones realizadas en Nora Business.
+              </p>
+
+            </div>
+
           </div>
-          <button id="closeOnboardingBtn" class="close-modal-btn" type="button">✕</button>
-        </div>
 
-        <!-- SLIDE 1 -->
-        <div id="onboardingSlide1" class="onboarding-slide active">
-          <div class="slide-icon">🌸</div>
-          <h2>¡Hola! Soy Nora</h2>
-          <p class="slide-text">
-            Bienvenido/a a tu nuevo espacio. Soy tu asistente personal y estoy aquí para cuidarte, recordarte tus cosas importantes y hacer tu día a día mucho más fácil y tranquilo.
-          </p>
-          <div class="feature-highlight">
-            ✨ Háblame por voz o texto cuando quieras.
-          </div>
-        </div>
+          <div
+            id="fullActivityList"
+            class="activity-full"
+          ></div>
 
-        <!-- SLIDE 2 -->
-        <div id="onboardingSlide2" class="onboarding-slide hidden">
-          <div class="slide-icon">🎙️</div>
-          <h2>Control por Voz Instantáneo</h2>
-          <p class="slide-text">
-            Pulsa el <strong>micrófono central</strong> en cualquier momento. Te saludaré según la hora y podrás decirme directamente qué quieres que recuerde. Te responderé en el acto.
-          </p>
-          <div class="feature-highlight">
-            👉 Ejemplo: <em>"Recuérdame tomar la pastilla a las 9"</em>
-          </div>
-        </div>
+        </section>
 
-        <!-- SLIDE 3 -->
-        <div id="onboardingSlide3" class="onboarding-slide hidden">
-          <div class="slide-icon">🧠</div>
-          <h2>El Baúl de Recuerdos</h2>
-          <p class="slide-text">
-            ¿Sueles olvidar dónde guardaste cosas? Solo dímelo: <em>"He guardado el pasaporte en el 2º cajón"</em>. Cuando me preguntes <em>"¿Dónde está mi pasaporte?"</em>, te lo diré al instante.
-          </p>
-          <div class="feature-highlight">
-            🔑 Nunca más perderás tus llaves o documentos.
-          </div>
-        </div>
-
-        <!-- SLIDE 4 -->
-        <div id="onboardingSlide4" class="onboarding-slide hidden">
-          <div class="slide-icon">🛒📸</div>
-          <h2>Súper por Pasillos & Cámara</h2>
-          <p class="slide-text">
-            Organizo tu lista de la compra por pasillos del supermercado para que ahorres tiempo, y puedes usar el botón de <strong>cámara 📷</strong> para fotografiar citas médicas y que las guarde por ti.
-          </p>
-          <div class="feature-highlight">
-            📻 Además, disfruta de tu <strong>Podcast Mañanero</strong> de 60s cada día.
-          </div>
-        </div>
-
-        <!-- Onboarding Navigation Buttons -->
-        <div class="onboarding-actions">
-          <button id="prevSlideBtn" class="slide-nav-btn hidden" type="button">Anterior</button>
-          <button id="nextSlideBtn" class="slide-primary-btn" type="button">Siguiente →</button>
-        </div>
       </div>
-    </div>
 
-    <!-- SOS MODAL -->
-    <div id="sosModal" class="modal-overlay hidden">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3>🚨 Contacto de Emergencia / SOS</h3>
-          <button id="closeSosModalBtn" class="close-modal-btn" type="button">✕</button>
+    </main>
+
+  </section>
+
+  <!-- =========================================================
+       MODAL: AÑADIR DOCUMENTO / CONOCIMIENTO
+       ========================================================= -->
+
+  <div
+    id="documentModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-card">
+
+      <div class="modal-head">
+
+        <div>
+
+          <span class="eyebrow">
+            NUEVO CONOCIMIENTO
+          </span>
+
+          <h3>
+            Añadir documento
+          </h3>
+
         </div>
-        <p class="modal-desc">Configura a tu familiar o cuidador de confianza para avisarle con 1 toque en caso de necesidad.</p>
-        
-        <form id="sosForm" class="auth-form">
-          <label>
-            <span>Nombre del contacto</span>
-            <input type="text" id="sosNameInput" placeholder="Ej. Hijo Carlos / Doctor" required />
-          </label>
-          <label>
-            <span>Teléfono con prefijo internacional</span>
-            <input type="tel" id="sosPhoneInput" placeholder="Ej. +34600112233" required />
-          </label>
-          <div class="modal-actions">
-            <button type="submit" class="submit-btn">Guardar contacto</button>
-            <button id="testSosAlertBtn" class="sos-action-btn" type="button">📲 Enviar aviso SOS ahora</button>
-          </div>
-        </form>
+
+        <button
+          class="icon-btn close-modal"
+        >
+          ×
+        </button>
+
       </div>
-    </div>
 
-    <div id="botsModal" class="modal-overlay hidden">
-      <div class="modal-card bots-card">
-        <div class="modal-header"><h3>🤖 Bots de Nora</h3><button id="closeBotsModalBtn" class="close-modal-btn" type="button">✕</button></div>
-        <p class="modal-desc">Elige un agente para pedirle ayuda a Nora. Cada acción queda bajo tu control.</p>
-        <div class="bot-grid">
-          <button class="bot-card" data-bot="agenda"><strong>📅 Agenda</strong><span>Organiza tu día y detecta conflictos.</span></button>
-          <button class="bot-card" data-bot="rutinas"><strong>🔁 Rutinas</strong><span>Crea hábitos y recordatorios recurrentes.</span></button>
-          <button class="bot-card" data-bot="familia"><strong>👨‍👩‍👧 Familia</strong><span>Prepara tareas para compartir.</span></button>
-          <button class="bot-card" data-bot="documentos"><strong>📄 Documentos</strong><span>Controla renovaciones y fechas importantes.</span></button>
-          <button class="bot-card" data-bot="bienestar"><strong>💚 Bienestar</strong><span>Haz un check-in de hábitos, sin diagnosticar.</span></button>
-          <button class="bot-card" data-bot="seguridad"><strong>🛡️ Seguridad</strong><span>Revisa la higiene básica de tu cuenta.</span></button>
-        </div>
-      </div>
-    </div>
+      <p class="modal-desc">
+        Pegue aquí un procedimiento, manual, FAQ o texto interno.
+        También puede cargar documentos PDF y archivos de texto compatibles.
+        Nora extraerá el contenido del PDF para incorporarlo a la base
+        de conocimiento.
+      </p>
 
-    <div id="consentModal" class="modal-overlay hidden">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3>Antes de empezar</h3>
-        </div>
-        <p class="modal-desc">Para usar Nora necesitamos tu aceptación de la política de privacidad y los términos del servicio.</p>
-        <label class="consent-row">
-          <input type="checkbox" id="accountConsent" />
-          <span>Acepto la <a href="/privacidad.html" target="_blank" rel="noopener">política de privacidad</a> y los <a href="/terminos.html" target="_blank" rel="noopener">términos del servicio</a>.</span>
+      <form id="documentForm">
+
+        <label>
+          Título
+
+          <input
+            id="docTitle"
+            required
+            maxlength="160"
+            placeholder="Ej. Procedimiento de vacaciones"
+          />
         </label>
+
+        <label>
+          Contenido
+
+          <textarea
+            id="docContent"
+            required
+            maxlength="120000"
+            rows="10"
+            placeholder="Pegue el contenido del documento aquí..."
+          ></textarea>
+        </label>
+
+        <label class="file-label">
+
+          Cargar PDF / TXT / MD / CSV / JSON
+
+          <input
+            id="docFile"
+            type="file"
+            accept=".pdf,application/pdf,.txt,.md,.csv,.json,text/plain,text/markdown,text/csv,application/json"
+          />
+
+          <small class="file-help">
+            PDF: hasta 10 MB. El texto se extraerá automáticamente.
+          </small>
+
+        </label>
+
         <div class="modal-actions">
-          <button id="acceptConsentBtn" class="submit-btn" type="button">Continuar</button>
+
+          <button
+            type="button"
+            class="secondary-btn close-modal"
+          >
+            Cancelar
+          </button>
+
+          <button
+            class="primary-btn"
+            type="submit"
+          >
+            Guardar documento
+          </button>
+
         </div>
-        <p id="consentMessage" class="auth-message"></p>
-      </div>
+
+      </form>
+
     </div>
 
+  </div>
 
-    <script src="app.js"></script>
-  </body>
+  <!-- =========================================================
+       MODAL: NUEVA TAREA
+       ========================================================= -->
+
+  <div
+    id="taskModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-card">
+
+      <div class="modal-head">
+
+        <div>
+
+          <span class="eyebrow">
+            NUEVA ACCIÓN
+          </span>
+
+          <h3>
+            Crear tarea
+          </h3>
+
+        </div>
+
+        <button
+          class="icon-btn close-modal"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <form id="taskForm">
+
+        <label>
+          Título
+
+          <input
+            id="taskTitle"
+            required
+            maxlength="180"
+            placeholder="Ej. Revisar presupuesto de septiembre"
+          />
+        </label>
+
+        <label>
+          Detalles
+
+          <textarea
+            id="taskDetails"
+            maxlength="1000"
+            rows="4"
+            placeholder="Información adicional..."
+          ></textarea>
+        </label>
+
+        <div class="form-row">
+
+          <label>
+            Prioridad
+
+            <select id="taskPriority">
+
+              <option value="low">
+                Baja
+              </option>
+
+              <option
+                value="medium"
+                selected
+              >
+                Media
+              </option>
+
+              <option value="high">
+                Alta
+              </option>
+
+            </select>
+
+          </label>
+
+          <label>
+            Fecha límite
+
+            <input
+              id="taskDue"
+              type="datetime-local"
+            />
+
+          </label>
+
+        </div>
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="secondary-btn close-modal"
+          >
+            Cancelar
+          </button>
+
+          <button
+            class="primary-btn"
+            type="submit"
+          >
+            Crear tarea
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+  <!-- =========================================================
+       MODAL: CONFIGURACIÓN DE EMPRESA
+       ========================================================= -->
+
+  <div
+    id="companyModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-card">
+
+      <div class="modal-head">
+
+        <div>
+
+          <span class="eyebrow">
+            ESPACIO EMPRESARIAL
+          </span>
+
+          <h3>
+            Configuración
+          </h3>
+
+        </div>
+
+        <button
+          class="icon-btn close-modal"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <form id="companyForm">
+
+        <label>
+          Nombre de la empresa
+
+          <input
+            id="companyNameInput"
+            required
+            maxlength="100"
+          />
+        </label>
+
+        <label>
+          Sector
+
+          <input
+            id="companySectorInput"
+            maxlength="80"
+          />
+        </label>
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="secondary-btn close-modal"
+          >
+            Cancelar
+          </button>
+
+          <button
+            class="primary-btn"
+            type="submit"
+          >
+            Guardar cambios
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+  <!-- =========================================================
+       SCRIPTS
+       ========================================================= -->
+
+  <!-- Soporte específico para subida de PDFs -->
+  <script src="/business-pdf.js"></script>
+
+  <!-- Lógica principal de Nora Business -->
+  <script src="/business.js"></script>
+
+</body>
 </html>

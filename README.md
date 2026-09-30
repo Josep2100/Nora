@@ -1,43 +1,59 @@
-# Nora — versión profesional
+# Nora Business
 
-## Estructura
+**Nora Business** es un asistente inteligente orientado a pequeñas empresas. Centraliza conocimiento interno, documentos y tareas para que los equipos puedan consultar información y convertirla en acciones.
+
+## Qué problema resuelve
+
+La información de muchas pequeñas empresas está repartida entre documentos, correos, procedimientos y conversaciones. Nora crea un espacio empresarial donde el usuario puede:
+
+- consultar la base de conocimiento con lenguaje natural;
+- guardar procedimientos, manuales, FAQs y documentación;
+- crear y gestionar tareas;
+- revisar actividad reciente;
+- mantener un espacio aislado por cuenta empresarial.
+
+## Estado
+
+**MVP / piloto.** Esta versión está preparada para demostraciones y validación con primeras empresas. Antes de usarla con datos empresariales reales deben completarse las revisiones de seguridad, privacidad y cumplimiento indicadas en `docs/SECURITY.md` y `docs/LAUNCH_CHECKLIST.md`.
+
+## Arquitectura
 
 ```text
-/
-├─ server.js
-├─ storage.js
-├─ gemini.js
-├─ package.json
-├─ package-lock.json
-├─ render.yaml
-├─ supabase_schema.sql
-├─ security-bot.js
-├─ test/
-│  └─ core.test.js
-└─ public/
-   ├─ index.html
-   ├─ app.js
-   ├─ styles.css
-   ├─ manifest.json
-   ├─ manifest.webmanifest
-   ├─ sw.js
-   ├─ icon.svg
-   ├─ icon-192.png
-   ├─ icon-512.png
-   ├─ privacidad.html
-   └─ terminos.html
+Navegador / PWA
+      │
+      ▼
+Express + sesiones
+      │
+      ├── Autenticación local / Google OAuth
+      ├── Workspace Business
+      ├── Base de conocimiento
+      ├── Tareas y actividad
+      └── Chat empresarial
+             │
+             ▼
+          Gemini API
+             │
+             ▼
+   Contexto empresarial autorizado
 ```
 
-## Cambios principales
+La información de una empresa se mantiene asociada a su cuenta en el backend. En producción se recomienda usar Supabase/PostgreSQL y `SUPABASE_SERVICE_ROLE_KEY` únicamente en el servidor.
 
-- Dashboard comercial con Agenda, Rutinas, Familia, Bienestar, Lista de compra, Actividad reciente y chat.
-- Chat accesible permanentemente desde la pantalla principal.
-- Nora utiliza un tono formal y profesional.
-- Los recordatorios se ejecutan de forma determinista antes de consultar la IA.
-- Se interpretan expresiones como «mañana a las 15», «hoy a las 18:30», «el viernes a las 9» y «el 3 de octubre a las 10».
-- El recordatorio guarda fecha y hora cuando se proporcionan.
-- Se eliminan respuestas informales del flujo principal.
-- Se mantiene autenticación, Supabase/PostgreSQL, PWA, voz, cámara, memoria y lista de compra.
+## Funcionalidades del MVP
+
+- Dashboard empresarial responsive.
+- Autenticación local y Google OAuth.
+- Workspace empresarial por cuenta.
+- Nombre y sector de empresa configurables.
+- Base de conocimiento con texto y archivos TXT/MD/CSV/JSON.
+- Chat de Nora con contexto empresarial.
+- Protección básica frente a prompt injection en el contenido documental.
+- Tareas con prioridad, fecha y estado.
+- Actividad reciente.
+- PWA instalable.
+- Separación de contenido por usuario/workspace.
+- Rate limiting básico en autenticación.
+- Headers de seguridad y cookies de sesión `httpOnly`.
 
 ## Desarrollo local
 
@@ -49,8 +65,37 @@ npm start
 
 Abrir `http://localhost:3000`.
 
-## Render
+## Variables de entorno
 
-El servicio usa `npm start` y sirve el frontend desde `public/`. Configura las variables secretas indicadas en `render.yaml`.
+Copia `.env.example` a `.env` y configura, como mínimo para una instalación gestionada:
 
-Nunca publiques `.env`, claves de Gemini, secretos de sesión ni `SUPABASE_SERVICE_ROLE_KEY`.
+- `SESSION_SECRET`
+- `DATA_ENCRYPTION_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `GEMINI_API_KEY`
+
+Google OAuth es opcional. Nunca publiques `.env` ni claves privadas.
+
+## Documentación
+
+- `docs/PRODUCT.md` — definición del producto y cliente objetivo.
+- `docs/BUSINESS_MODEL.md` — modelo comercial y estrategia de validación.
+- `docs/SECURITY.md` — controles actuales y pendientes antes de producción.
+- `docs/ROADMAP.md` — evolución de MVP a SaaS empresarial.
+- `docs/LAUNCH_CHECKLIST.md` — lista de comprobación previa al primer cliente real.
+- `docs/SALES.md` — guion para conseguir pilotos.
+- `PROPUESTA_VENTA.md` — propuesta comercial actualizada.
+
+## Limitaciones conocidas del MVP
+
+- La cuenta empresarial actual tiene un único miembro activo.
+- Las invitaciones y permisos por empleado están planificados para la siguiente fase.
+- La carga de archivos está limitada a formatos de texto; PDF/Office requieren una fase posterior de extracción y RAG.
+- La búsqueda documental actual envía un contexto limitado a Gemini; no es todavía un sistema RAG con embeddings/vector DB.
+- No se debe introducir información altamente sensible, contraseñas, claves API ni secretos.
+- Los textos legales incluidos son provisionales y deben ser revisados profesionalmente antes de operar comercialmente.
+
+## Seguridad
+
+Lee `docs/SECURITY.md` antes de desplegar. En particular, no uses una instalación local basada en archivos como almacenamiento de producción para datos empresariales.

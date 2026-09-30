@@ -1,7 +1,7 @@
 {
-  "name": "nora-assistant",
-  "version": "1.0.0",
-  "description": "Nora | Tu Asistente Personal con IA, memoria de objetos, visión y voz",
+  "name": "nora-business",
+  "version": "4.0.0",
+  "description": "Nora Business | Asistente inteligente para pequeñas empresas",
   "main": "server.js",
   "engines": {
     "node": ">=20"
@@ -23,6 +23,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
+    "pdf-parse": "^1.1.1",
     "pg": "^8.23.0"
   }
 }
