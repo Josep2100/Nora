@@ -32,3 +32,13 @@ test('El servidor expone las rutas del workspace empresarial', () => {
     assert.match(server, new RegExp(route.replaceAll('/', '\\/')));
   }
 });
+
+test('El flujo de autenticación alterna entre iniciar sesión y crear cuenta', () => {
+  const appJs = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+
+  assert.match(appJs, /showLogin/);
+  assert.match(appJs, /showRegister/);
+  assert.match(appJs, /loginForm/);
+  assert.match(appJs, /signupForm/);
+  assert.match(appJs, /classList\.toggle\(['"]hidden['"]/);
+});

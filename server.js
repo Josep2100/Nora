@@ -112,6 +112,47 @@ app.post('/api/auth/login', (req, res, next) => {
   })(req, res, next);
 });
 
+app.post('/api/auth/signup', async (req, res, next) => {
+  try {
+    const { name, email, password, consentAccepted } = req.body || {};
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Faltan datos requeridos para crear la cuenta.' });
+    }
+
+    if (String(password).length < 8) {
+      return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres.' });
+    }
+
+    if (consentAccepted !== true && consentAccepted !== 'true') {
+      return res.status(400).json({ error: 'Debe aceptar la política de privacidad y los términos.' });
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const existingUser = await storage.getUserByEmail(normalizedEmail);
+    if (existingUser) {
+      return res.status(409).json({ error: 'Ya existe una cuenta con ese correo electrónico.' });
+    }
+
+    const user = await storage.createUser({
+      name: String(name).trim(),
+      email: normalizedEmail,
+      passwordHash: await bcrypt.hash(password, 10)
+    });
+
+    req.logIn(user, (loginErr) => {
+      if (loginErr) return res.status(500).json({ error: 'Error al crear la sesión del usuario.' });
+      return res.status(201).json({
+        message: 'Cuenta creada correctamente',
+        user: { id: user.id, email: user.email, name: user.name || user.email }
+      });
+    });
+  } catch (error) {
+    console.error('Error creando usuario:', error);
+    return res.status(500).json({ error: 'No se pudo crear la cuenta en este momento.' });
+  }
+});
+
 // Ruta para inicio de sesión con Google
 app.get('/api/auth/google', (req, res) => {
   res.status(501).json({ 

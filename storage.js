@@ -126,6 +126,35 @@ function saveUsers(users) {
   }
 }
 
+async function getUserByEmail(email) {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  return loadUsers().find(user => String(user.email || '').trim().toLowerCase() === normalizedEmail) || null;
+}
+
+async function getUserById(id) {
+  const normalizedId = String(id);
+  return loadUsers().find(user => String(user.id) === normalizedId) || null;
+}
+
+async function createUser({ name, email, passwordHash, password }) {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  const existingUser = await getUserByEmail(normalizedEmail);
+  if (existingUser) return existingUser;
+
+  const user = {
+    id: crypto.randomUUID(),
+    name: String(name || '').trim() || normalizedEmail.split('@')[0],
+    email: normalizedEmail,
+    password_hash: passwordHash || password || null,
+    createdAt: new Date().toISOString()
+  };
+
+  const users = loadUsers();
+  users.push(user);
+  saveUsers(users);
+  return user;
+}
+
 async function trackEvent(userId, eventName, metadata = {}) {
   const safeMetadata = { ...metadata };
   delete safeMetadata.message; delete safeMetadata.email; delete safeMetadata.name;
@@ -177,4 +206,15 @@ class NoraSessionStore extends session.Store {
 
 function getSessionStore() { return new NoraSessionStore(); }
 
-module.exports = { initStorage, loadUsers, saveUsers, trackEvent, getMetrics, getStatus, getSessionStore };
+module.exports = {
+  initStorage,
+  loadUsers,
+  saveUsers,
+  getUserByEmail,
+  getUserById,
+  createUser,
+  trackEvent,
+  getMetrics,
+  getStatus,
+  getSessionStore
+};
