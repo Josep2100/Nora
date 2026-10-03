@@ -55,6 +55,7 @@ function decrypt(raw) {
 }
 
 function readLocalUsers() {
+  ensureFiles();
   try {
     const raw = fs.readFileSync(usersFile, 'utf8');
     const parsed = decrypt(raw);
@@ -66,6 +67,7 @@ function readLocalUsers() {
 }
 
 function writeLocalUsers(users) {
+  ensureFiles();
   fs.writeFileSync(usersFile, encrypt(JSON.stringify(users)), 'utf8');
 }
 
@@ -146,13 +148,73 @@ async function createUser({ name, email, passwordHash, password }) {
     name: String(name || '').trim() || normalizedEmail.split('@')[0],
     email: normalizedEmail,
     password_hash: passwordHash || password || null,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    tasks: [],
+    knowledge: [],
+    memory: [],
+    team: [],
+    activity: []
   };
 
   const users = loadUsers();
   users.push(user);
   saveUsers(users);
   return user;
+}
+
+async function getTasks(userId) {
+  const user = await getUserById(userId);
+  return Array.isArray(user?.tasks) ? user.tasks : [];
+}
+
+async function saveTask(userId, task) {
+  const users = loadUsers();
+  const index = users.findIndex(user => String(user.id) === String(userId));
+  if (index < 0) return null;
+
+  const safeTask = {
+    id: task.id || crypto.randomUUID(),
+    title: task.title || 'Tarea nueva',
+    description: task.description || '',
+    priority: task.priority || 'normal',
+    completed: Boolean(task.completed),
+    dueDate: task.dueDate || null,
+    createdAt: task.createdAt || new Date().toISOString()
+  };
+
+  users[index].tasks = Array.isArray(users[index].tasks) ? users[index].tasks : [];
+  users[index].tasks.push(safeTask);
+  saveUsers(users);
+  return safeTask;
+}
+
+async function getMemoryVault(userId) {
+  const user = await getUserById(userId);
+  return Array.isArray(user?.memory) ? user.memory : [];
+}
+
+async function getKnowledgeContext(userId) {
+  const user = await getUserById(userId);
+  const knowledge = Array.isArray(user?.knowledge) ? user.knowledge : [];
+  return knowledge.map(item => item.content || item.text || '').filter(Boolean).join('\n\n');
+}
+
+async function saveDocument(userId, document) {
+  const users = loadUsers();
+  const index = users.findIndex(user => String(user.id) === String(userId));
+  if (index < 0) return null;
+
+  const safeDocument = {
+    id: document.id || crypto.randomUUID(),
+    title: document.title || 'Documento',
+    content: document.content || '',
+    createdAt: document.createdAt || new Date().toISOString()
+  };
+
+  users[index].knowledge = Array.isArray(users[index].knowledge) ? users[index].knowledge : [];
+  users[index].knowledge.push(safeDocument);
+  saveUsers(users);
+  return safeDocument;
 }
 
 async function trackEvent(userId, eventName, metadata = {}) {
@@ -213,6 +275,11 @@ module.exports = {
   getUserByEmail,
   getUserById,
   createUser,
+  getTasks,
+  saveTask,
+  getMemoryVault,
+  getKnowledgeContext,
+  saveDocument,
   trackEvent,
   getMetrics,
   getStatus,

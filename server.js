@@ -340,7 +340,11 @@ app.use((err, req, res, next) => {
 // 6. INICIALIZACIÓN DEL SERVIDOR
 // ==========================================
 
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor Nora Business iniciado correctamente en el puerto ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+storage.initStorage()
+  .catch((error) => console.warn('No se pudo inicializar almacenamiento persistente:', error.message))
+  .finally(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor Nora Business iniciado correctamente en el puerto ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  });
