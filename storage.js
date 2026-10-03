@@ -5,7 +5,7 @@ const { Pool } = require('pg');
 const session = require('express-session');
 require('dotenv').config();
 
-const dataDir = path.join(__dirname, 'data');
+const dataDir = process.env.NORA_DATA_DIR || path.join(__dirname, 'data');
 const usersFile = path.join(dataDir, 'users.json');
 const eventsFile = path.join(dataDir, 'events.json');
 const encryptionKey = crypto.createHash('sha256').update(process.env.DATA_ENCRYPTION_KEY || process.env.SESSION_SECRET || 'nora-local-encryption-key').digest();
@@ -117,15 +117,16 @@ async function initStorage() {
 
 function loadUsers() { return usersCache.map(user => JSON.parse(JSON.stringify(user))); }
 
-function saveUsers(users) {
-  usersCache = Array.isArray(users) ? users : [];
+async function saveUsers(users) {
+  const nextUsers = Array.isArray(users) ? users : [];
   if (supabaseEnabled) {
-    Promise.all(usersCache.map(user => supabaseRequest('nora_users', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify({ id: user.id, email: user.email, payload: user }) }))).catch(error => console.error('Error guardando en Supabase:', error.message));
+    await Promise.all(nextUsers.map(user => supabaseRequest('nora_users', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify({ id: user.id, email: user.email, payload: user }) })));
   } else if (pool) {
-    Promise.all(usersCache.map(user => pool.query('INSERT INTO nora_users (id, email, payload) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, payload = EXCLUDED.payload, updated_at = NOW()', [user.id, user.email, user]))).catch(error => console.error('Error guardando en PostgreSQL:', error.message));
+    await Promise.all(nextUsers.map(user => pool.query('INSERT INTO nora_users (id, email, payload) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, payload = EXCLUDED.payload, updated_at = NOW()', [user.id, user.email, user])));
   } else {
-    writeLocalUsers(usersCache);
+    writeLocalUsers(nextUsers);
   }
+  usersCache = nextUsers;
 }
 
 async function getUserByEmail(email) {
@@ -138,14 +139,18 @@ async function getUserById(id) {
   return loadUsers().find(user => String(user.id) === normalizedId) || null;
 }
 
-async function createUser({ name, email, passwordHash, password }) {
+async function createUser({ name, companyName, email, passwordHash, password }) {
   const normalizedEmail = String(email || '').trim().toLowerCase();
   const existingUser = await getUserByEmail(normalizedEmail);
   if (existingUser) return existingUser;
 
+  const normalizedCompanyName = String(companyName || '').trim() || 'Mi Empresa';
+
   const user = {
     id: crypto.randomUUID(),
     name: String(name || '').trim() || normalizedEmail.split('@')[0],
+    companyName: normalizedCompanyName,
+    company_name: normalizedCompanyName,
     email: normalizedEmail,
     password_hash: passwordHash || password || null,
     createdAt: new Date().toISOString(),
@@ -158,7 +163,7 @@ async function createUser({ name, email, passwordHash, password }) {
 
   const users = loadUsers();
   users.push(user);
-  saveUsers(users);
+  await saveUsers(users);
   return user;
 }
 
@@ -184,7 +189,7 @@ async function saveTask(userId, task) {
 
   users[index].tasks = Array.isArray(users[index].tasks) ? users[index].tasks : [];
   users[index].tasks.push(safeTask);
-  saveUsers(users);
+  await saveUsers(users);
   return safeTask;
 }
 
@@ -213,7 +218,7 @@ async function saveDocument(userId, document) {
 
   users[index].knowledge = Array.isArray(users[index].knowledge) ? users[index].knowledge : [];
   users[index].knowledge.push(safeDocument);
-  saveUsers(users);
+  await saveUsers(users);
   return safeDocument;
 }
 

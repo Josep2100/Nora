@@ -106,7 +106,12 @@ app.post('/api/auth/login', (req, res, next) => {
       if (loginErr) return res.status(500).json({ error: 'Error al iniciar sesión' });
       return res.json({
         message: 'Sesión iniciada correctamente',
-        user: { id: user.id, email: user.email, name: user.name || user.email }
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name || user.email,
+          companyName: user.companyName || user.company_name || 'Mi empresa'
+        }
       });
     });
   })(req, res, next);
@@ -114,10 +119,20 @@ app.post('/api/auth/login', (req, res, next) => {
 
 app.post('/api/auth/signup', async (req, res, next) => {
   try {
-    const { name, email, password, consentAccepted } = req.body || {};
+    const { name, companyName, email, password, consentAccepted } = req.body || {};
 
-    if (!name || !email || !password) {
+    if (!name || !companyName || !email || !password) {
       return res.status(400).json({ error: 'Faltan datos requeridos para crear la cuenta.' });
+    }
+
+    const normalizedCompanyName = String(companyName).trim();
+
+    if (!normalizedCompanyName) {
+      return res.status(400).json({ error: 'Debe indicar el nombre de la empresa.' });
+    }
+
+    if (normalizedCompanyName.length > 100) {
+      return res.status(400).json({ error: 'El nombre de la empresa no puede superar los 100 caracteres.' });
     }
 
     if (String(password).length < 8) {
@@ -136,6 +151,7 @@ app.post('/api/auth/signup', async (req, res, next) => {
 
     const user = await storage.createUser({
       name: String(name).trim(),
+      companyName: normalizedCompanyName,
       email: normalizedEmail,
       passwordHash: await bcrypt.hash(password, 10)
     });
@@ -144,7 +160,12 @@ app.post('/api/auth/signup', async (req, res, next) => {
       if (loginErr) return res.status(500).json({ error: 'Error al crear la sesión del usuario.' });
       return res.status(201).json({
         message: 'Cuenta creada correctamente',
-        user: { id: user.id, email: user.email, name: user.name || user.email }
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name || user.email,
+          companyName: user.companyName || user.company_name || normalizedCompanyName
+        }
       });
     });
   } catch (error) {
@@ -173,7 +194,12 @@ app.post('/api/auth/logout', (req, res, next) => {
 app.get('/api/auth/me', (req, res) => {
   if (req.isAuthenticated && req.isAuthenticated()) {
     return res.json({
-      user: { id: req.user.id, email: req.user.email, name: req.user.name || req.user.email }
+      user: {
+        id: req.user.id,
+        email: req.user.email,
+        name: req.user.name || req.user.email,
+        companyName: req.user.companyName || req.user.company_name || 'Mi empresa'
+      }
     });
   }
   return res.status(401).json({ user: null });
@@ -188,6 +214,7 @@ app.get('/api/business/dashboard', ensureAuthenticated, async (req, res) => {
     const userId = req.user.id;
     const tasks = await storage.getTasks(userId);
     const memory = await storage.getMemoryVault(userId);
+    const companyName = req.user.companyName || req.user.company_name || process.env.COMPANY_NAME || 'Mi Empresa';
 
     const pendingTasks = tasks.filter(t => !t.completed);
     const completedTasks = tasks.filter(t => t.completed);
@@ -200,7 +227,8 @@ app.get('/api/business/dashboard', ensureAuthenticated, async (req, res) => {
         memoryItems: memory.length
       },
       recentTasks: tasks.slice(0, 5),
-      companyName: process.env.COMPANY_NAME || 'Mi Empresa'
+      companyName,
+      companySector: req.user.companySector || 'Servicios profesionales'
     });
   } catch (error) {
     console.error('Error en /api/business/dashboard:', error);

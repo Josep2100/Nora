@@ -42,3 +42,14 @@ test('El flujo de autenticación alterna entre iniciar sesión y crear cuenta', 
   assert.match(appJs, /signupForm/);
   assert.match(appJs, /classList\.toggle\(['"]hidden['"]/);
 });
+
+test('El registro pide el nombre de la empresa y lo guarda en la cuenta', () => {
+  const appJs = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  const serverJs = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+  const storageJs = fs.readFileSync(path.join(__dirname, '..', 'storage.js'), 'utf8');
+
+  assert.match(appJs, /signupCompanyName|companyName/);
+  assert.match(serverJs, /companyName/);
+  assert.match(storageJs, /companyName/);
+  assert.match(storageJs, /await saveUsers\(users\)/);
+});

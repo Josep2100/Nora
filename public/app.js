@@ -94,13 +94,14 @@ document.addEventListener('DOMContentLoaded', () => {
       event.preventDefault();
 
       const name = document.getElementById('signupName')?.value.trim() || '';
+      const companyName = document.getElementById('signupCompanyName')?.value.trim() || '';
       const email = document.getElementById('signupEmail')?.value.trim() || '';
       const password = document.getElementById('signupPassword')?.value || '';
       const consent = document.getElementById('privacyConsent');
       const submitBtn = signupForm.querySelector('button[type="submit"]');
 
-      if (!name || !email || !password) {
-        setAuthMessage('Complete nombre, correo y contraseña para crear la cuenta.', true);
+      if (!name || !companyName || !email || !password) {
+        setAuthMessage('Complete nombre, empresa, correo y contraseña para crear la cuenta.', true);
         return;
       }
 
@@ -119,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch('/api/auth/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, consentAccepted: true })
+          body: JSON.stringify({ name, companyName, email, password, consentAccepted: true })
         });
 
         const data = await res.json();
@@ -192,10 +193,19 @@ async function loadDashboard(user) {
     const authScreen = document.getElementById('authScreen');
     const appScreen = document.getElementById('appScreen');
 
+    const dashboardData = await res.json();
+    const companyNameValue = dashboardData.companyName || user.companyName || 'Mi empresa';
+    const companyNameSide = document.getElementById('companyNameSide');
+    const companyNameHero = document.getElementById('companyNameHero');
+    const companySectorSide = document.getElementById('companySectorSide');
+
+    if (companyNameSide) companyNameSide.textContent = companyNameValue;
+    if (companyNameHero) companyNameHero.textContent = companyNameValue;
+    if (companySectorSide) companySectorSide.textContent = dashboardData.companySector || 'Servicios profesionales';
+
     if (authScreen) authScreen.classList.add('hidden');
     if (appScreen) appScreen.classList.remove('hidden');
 
-    const dashboardData = await res.json();
     console.log('Datos de Nora Business cargados:', dashboardData);
   } catch (error) {
     console.error('Error al cargar datos del workspace:', error);

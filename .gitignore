@@ -10,6 +10,7 @@ data/backups/
 tmp/
 output/
 Vender_Aplicación/
+/Linkedin/
 *.zip
 /informe_estrategico_nora.pdf
 /icon.svg
