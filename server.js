@@ -249,9 +249,17 @@ app.post('/api/business/chat', ensureAuthenticated, async (req, res) => {
     }
 
     const knowledgeContext = await storage.getKnowledgeContext(req.user.id);
-    const reply = await gemini.generateResponse(message, knowledgeContext);
+    const tasks = await storage.getTasks(req.user.id);
+    const companyName = req.user.companyName || req.user.company_name || 'la empresa';
+    const result = await gemini.generateBusinessResponse(
+      message,
+      knowledgeContext,
+      tasks,
+      companyName,
+      req.user.name || req.user.email || 'Usuario'
+    );
 
-    return res.json({ reply });
+    return res.json({ reply: result.response, sources: result.sources || [] });
   } catch (error) {
     console.error('Error en /api/business/chat:', error);
     return res.status(500).json({ error: 'Error al procesar el mensaje con la IA' });
@@ -301,6 +309,18 @@ app.get('/api/business/knowledge', ensureAuthenticated, async (req, res) => {
     console.error('Error al obtener base de conocimiento:', error);
     return res.status(500).json({ error: 'Error al obtener la base de conocimiento' });
   }
+});
+
+app.get('/api/business/knowledge/documents', ensureAuthenticated, (req, res) => {
+  const documents = Array.isArray(req.user.knowledge) ? req.user.knowledge : [];
+  return res.json({
+    documents: documents.map(document => ({
+      id: document.id,
+      title: document.title || 'Documento',
+      preview: String(document.content || '').slice(0, 240),
+      createdAt: document.createdAt || null
+    }))
+  });
 });
 
 app.post('/api/business/knowledge', ensureAuthenticated, async (req, res) => {

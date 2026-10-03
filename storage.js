@@ -201,7 +201,11 @@ async function getMemoryVault(userId) {
 async function getKnowledgeContext(userId) {
   const user = await getUserById(userId);
   const knowledge = Array.isArray(user?.knowledge) ? user.knowledge : [];
-  return knowledge.map(item => item.content || item.text || '').filter(Boolean).join('\n\n');
+  return knowledge.map((item, index) => {
+    const content = item.content || item.text || '';
+    if (!content) return '';
+    return `DOCUMENTO ${index + 1}: ${item.title || 'Documento'}\n${content}`;
+  }).filter(Boolean).join('\n\n');
 }
 
 async function saveDocument(userId, document) {

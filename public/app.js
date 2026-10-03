@@ -203,8 +203,19 @@ async function loadDashboard(user) {
     if (companyNameHero) companyNameHero.textContent = companyNameValue;
     if (companySectorSide) companySectorSide.textContent = dashboardData.companySector || 'Servicios profesionales';
 
+    const userNameValue = user.name || user.email || 'Usuario';
+    const userNameTop = document.getElementById('userNameTop');
+    const userAvatar = document.getElementById('userAvatar');
+
+    if (userNameTop) userNameTop.textContent = userNameValue;
+    if (userAvatar) userAvatar.textContent = userNameValue.trim().charAt(0).toUpperCase();
+
     if (authScreen) authScreen.classList.add('hidden');
     if (appScreen) appScreen.classList.remove('hidden');
+
+    window.dispatchEvent(new CustomEvent('nora:dashboard-loaded', {
+      detail: { user, dashboard: dashboardData }
+    }));
 
     console.log('Datos de Nora Business cargados:', dashboardData);
   } catch (error) {

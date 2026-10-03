@@ -506,8 +506,8 @@ REGLAS:
 
     // Lista de modelos oficiales Gemini vigentes
     const models = [
-      { name: 'gemini-2.5-flash', attempts: 2 },
-      { name: 'gemini-2.5-pro', attempts: 2 }
+      { name: 'gemini-3.8-flash', attempts: 2 },
+      { name: 'gemini-3.1-pro-preview', attempts: 2 }
     ];
 
     let result = null;

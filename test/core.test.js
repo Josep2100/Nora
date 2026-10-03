@@ -52,4 +52,19 @@ test('El registro pide el nombre de la empresa y lo guarda en la cuenta', () => 
   assert.match(serverJs, /companyName/);
   assert.match(storageJs, /companyName/);
   assert.match(storageJs, /await saveUsers\(users\)/);
+  assert.match(storageJs, /DOCUMENTO \$\{index \+ 1\}/);
+});
+
+test('El panel conecta tareas, documentos y chat con las rutas empresariales', () => {
+  const businessJs = fs.readFileSync(path.join(__dirname, '..', 'public', 'business.js'), 'utf8');
+  const serverJs = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+  const geminiJs = fs.readFileSync(path.join(__dirname, '..', 'gemini.js'), 'utf8');
+
+  assert.match(businessJs, /api\/business\/tasks/);
+  assert.match(businessJs, /api\/business\/knowledge/);
+  assert.match(businessJs, /api\/business\/chat/);
+  assert.match(serverJs, /generateBusinessResponse/);
+  assert.match(serverJs, /api\/business\/knowledge\/documents/);
+  assert.match(geminiJs, /name: 'gemini-3\.8-flash'/);
+  assert.match(geminiJs, /name: 'gemini-3\.1-pro-preview'/);
 });
