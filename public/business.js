@@ -305,6 +305,14 @@
           }
         }, { once: true });
       }
+      const connections = await requestJson('/api/calendar/connections').catch(() => ({}));
+      const status = document.getElementById('calendarConnectionStatus');
+      if (status) {
+        const connected = [connections.google && 'Google Calendar', connections.microsoft && 'Outlook/Microsoft 365'].filter(Boolean);
+        status.textContent = connected.length
+          ? `Conectado: ${connected.join(' y ')}. Las tareas nuevas con fecha se añadirán automáticamente.`
+          : 'Conecte uno o ambos calendarios arriba para añadir automáticamente las tareas con fecha.';
+      }
     } catch (error) {
       // El enlace .ics sigue funcionando si el feed no está disponible.
       console.warn('No se pudo preparar la suscripción de calendario:', error.message);
@@ -779,7 +787,7 @@
       setFormLoading(taskForm, true, 'Guardando...');
       try {
         const dueValue = document.getElementById('taskDue')?.value || '';
-        await requestJson('/api/business/tasks', {
+        const result = await requestJson('/api/business/tasks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -792,7 +800,8 @@
         taskForm.reset();
         closeModal(document.getElementById('taskModal'));
         await refreshWorkspace();
-        showToast('Tarea guardada en el espacio empresarial.', 'success');
+        const created = Object.entries(result.calendarSync || {}).filter(([, value]) => value === 'created').map(([provider]) => provider === 'google' ? 'Google Calendar' : 'Outlook');
+        showToast(created.length ? `Tarea guardada y añadida a ${created.join(' y ')}.` : 'Tarea guardada en el espacio empresarial.', 'success');
       } catch (error) {
         showToast(error.message || 'No se pudo guardar la tarea.', 'error');
       } finally {

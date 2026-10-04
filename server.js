@@ -1,4 +1,5 @@
 require('dotenv').config();
+const crypto = require('crypto');
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
@@ -143,6 +144,192 @@ function ensureAuthenticated(req, res, next) {
   }
   return res.status(401).json({ error: 'No autorizado. Debe iniciar sesión.' });
 }
+
+// Integración opcional con calendarios externos. Las credenciales se configuran
+// en Render; sin ellas Claryvo conserva el feed ICS como alternativa.
+const calendarConfig = {
+  google: {
+    clientId: process.env.GOOGLE_CALENDAR_CLIENT_ID || googleClientId,
+    clientSecret: process.env.GOOGLE_CALENDAR_CLIENT_SECRET || googleClientSecret,
+    callbackUrl: process.env.GOOGLE_CALENDAR_CALLBACK_URL || '/api/calendar/google/callback'
+  },
+  microsoft: {
+    clientId: process.env.MICROSOFT_CLIENT_ID,
+    clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+    tenantId: process.env.MICROSOFT_TENANT_ID || 'common',
+    callbackUrl: process.env.MICROSOFT_CALENDAR_CALLBACK_URL || '/api/calendar/microsoft/callback'
+  }
+};
+
+function publicBaseUrl(req) {
+  return String(process.env.PUBLIC_APP_URL || `${req.protocol}://${req.get('host')}`).replace(/\/$/, '');
+}
+
+function absoluteCallbackUrl(req, callbackUrl) {
+  return /^https?:\/\//i.test(callbackUrl) ? callbackUrl : `${publicBaseUrl(req)}${callbackUrl.startsWith('/') ? '' : '/'}${callbackUrl}`;
+}
+
+function rememberCalendarOAuth(req, provider) {
+  const state = crypto.randomBytes(24).toString('hex');
+  req.session.calendarOAuth = { state, provider, userId: req.user.id };
+  return state;
+}
+
+function consumeCalendarOAuth(req, provider, state) {
+  const saved = req.session.calendarOAuth;
+  if (!saved || saved.provider !== provider || saved.state !== state) return null;
+  delete req.session.calendarOAuth;
+  return saved;
+}
+
+async function postForm(url, values) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(values)
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error_description || data.error || `Proveedor de calendario respondió ${response.status}`);
+  return data;
+}
+
+async function calendarRequest(url, accessToken, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: { ...(options.headers || {}), Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' }
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.error?.message || data.error_description || `Proveedor de calendario respondió ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
+function calendarEvent(task) {
+  const start = new Date(task.dueDate);
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  return {
+    summary: task.title,
+    description: task.description || 'Tarea creada en Claryvo',
+    start: { dateTime: start.toISOString() },
+    end: { dateTime: end.toISOString() },
+    reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 1440 }, { method: 'popup', minutes: 120 }] }
+  };
+}
+
+async function refreshCalendarToken(userId, provider, connection) {
+  const config = calendarConfig[provider];
+  if (!connection?.refreshToken || !config?.clientId || !config?.clientSecret) return null;
+  const tokenUrl = provider === 'google'
+    ? 'https://oauth2.googleapis.com/token'
+    : `https://login.microsoftonline.com/${encodeURIComponent(calendarConfig.microsoft.tenantId)}/oauth2/v2.0/token`;
+  const data = await postForm(tokenUrl, {
+    client_id: config.clientId,
+    client_secret: config.clientSecret,
+    refresh_token: connection.refreshToken,
+    grant_type: 'refresh_token',
+    ...(provider === 'microsoft' ? { scope: 'offline_access openid profile User.Read Calendars.ReadWrite' } : {})
+  });
+  const updated = { ...connection, accessToken: data.access_token, refreshToken: data.refresh_token || connection.refreshToken, expiresAt: Date.now() + (Number(data.expires_in || 3600) * 1000) };
+  await storage.saveCalendarConnection(userId, provider, updated);
+  return updated.accessToken;
+}
+
+async function getCalendarToken(userId, provider) {
+  const connections = await storage.getCalendarConnections(userId);
+  const connection = connections[provider];
+  if (!connection?.accessToken) return null;
+  if (!connection.expiresAt || Number(connection.expiresAt) > Date.now() + 60_000) return connection.accessToken;
+  return refreshCalendarToken(userId, provider, connection);
+}
+
+async function createCalendarEvent(userId, provider, task) {
+  if (!task?.dueDate) return 'no-date';
+  let token = await getCalendarToken(userId, provider);
+  if (!token) return 'not-connected';
+  const event = calendarEvent(task);
+  try {
+    if (provider === 'google') {
+      await calendarRequest('https://www.googleapis.com/calendar/v3/calendars/primary/events', token, { method: 'POST', body: JSON.stringify(event) });
+    } else {
+      await calendarRequest('https://graph.microsoft.com/v1.0/me/events', token, {
+        method: 'POST',
+        body: JSON.stringify({ subject: event.summary, body: { contentType: 'Text', content: event.description }, start: { dateTime: event.start.dateTime, timeZone: 'UTC' }, end: { dateTime: event.end.dateTime, timeZone: 'UTC' }, isReminderOn: true, reminderMinutesBeforeStart: 1440 })
+      });
+    }
+    return 'created';
+  } catch (error) {
+    if (error.status === 401) {
+      const connections = await storage.getCalendarConnections(userId);
+      token = await refreshCalendarToken(userId, provider, connections[provider]);
+      if (token) {
+        if (provider === 'google') await calendarRequest('https://www.googleapis.com/calendar/v3/calendars/primary/events', token, { method: 'POST', body: JSON.stringify(event) });
+        else await calendarRequest('https://graph.microsoft.com/v1.0/me/events', token, { method: 'POST', body: JSON.stringify({ subject: event.summary, body: { contentType: 'Text', content: event.description }, start: { dateTime: event.start.dateTime, timeZone: 'UTC' }, end: { dateTime: event.end.dateTime, timeZone: 'UTC' }, isReminderOn: true, reminderMinutesBeforeStart: 1440 }) });
+        return 'created';
+      }
+    }
+    console.error(`No se pudo crear el evento en ${provider}:`, error.message);
+    return 'error';
+  }
+}
+
+async function syncTaskToCalendars(userId, task) {
+  if (!task?.dueDate) return { google: 'no-date', microsoft: 'no-date' };
+  return { google: await createCalendarEvent(userId, 'google', task), microsoft: await createCalendarEvent(userId, 'microsoft', task) };
+}
+
+app.get('/api/calendar/connections', ensureAuthenticated, async (req, res) => {
+  const connections = await storage.getCalendarConnections(req.user.id);
+  return res.json({ google: Boolean(connections.google?.accessToken), microsoft: Boolean(connections.microsoft?.accessToken) });
+});
+
+app.get('/api/calendar/google/connect', ensureAuthenticated, (req, res) => {
+  const config = calendarConfig.google;
+  if (!config.clientId || !config.clientSecret) return res.status(501).send('Google Calendar todavía no está configurado en Claryvo.');
+  const state = rememberCalendarOAuth(req, 'google');
+  const params = new URLSearchParams({ client_id: config.clientId, redirect_uri: absoluteCallbackUrl(req, config.callbackUrl), response_type: 'code', access_type: 'offline', prompt: 'consent', scope: 'openid email profile https://www.googleapis.com/auth/calendar.events', state });
+  return res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+});
+
+app.get('/api/calendar/google/callback', async (req, res) => {
+  try {
+    if (req.query.error) return res.redirect('/?calendar=cancelled');
+    const saved = consumeCalendarOAuth(req, 'google', req.query.state);
+    if (!saved) return res.status(400).send('La conexión de Google Calendar ha caducado. Vuelva a intentarlo.');
+    const config = calendarConfig.google;
+    const data = await postForm('https://oauth2.googleapis.com/token', { code: req.query.code, client_id: config.clientId, client_secret: config.clientSecret, redirect_uri: absoluteCallbackUrl(req, config.callbackUrl), grant_type: 'authorization_code' });
+    await storage.saveCalendarConnection(saved.userId, 'google', { accessToken: data.access_token, refreshToken: data.refresh_token, expiresAt: Date.now() + (Number(data.expires_in || 3600) * 1000) });
+    return res.redirect('/?calendar=google-connected');
+  } catch (error) {
+    console.error('Error conectando Google Calendar:', error);
+    return res.redirect('/?calendar=error');
+  }
+});
+
+app.get('/api/calendar/microsoft/connect', ensureAuthenticated, (req, res) => {
+  const config = calendarConfig.microsoft;
+  if (!config.clientId || !config.clientSecret) return res.status(501).send('Outlook/Microsoft 365 todavía no está configurado en Claryvo.');
+  const state = rememberCalendarOAuth(req, 'microsoft');
+  const params = new URLSearchParams({ client_id: config.clientId, response_type: 'code', redirect_uri: absoluteCallbackUrl(req, config.callbackUrl), response_mode: 'query', scope: 'offline_access openid profile User.Read Calendars.ReadWrite', state });
+  return res.redirect(`https://login.microsoftonline.com/${encodeURIComponent(config.tenantId)}/oauth2/v2.0/authorize?${params}`);
+});
+
+app.get('/api/calendar/microsoft/callback', async (req, res) => {
+  try {
+    if (req.query.error) return res.redirect('/?calendar=cancelled');
+    const saved = consumeCalendarOAuth(req, 'microsoft', req.query.state);
+    if (!saved) return res.status(400).send('La conexión de Outlook ha caducado. Vuelva a intentarlo.');
+    const config = calendarConfig.microsoft;
+    const data = await postForm(`https://login.microsoftonline.com/${encodeURIComponent(config.tenantId)}/oauth2/v2.0/token`, { code: req.query.code, client_id: config.clientId, client_secret: config.clientSecret, redirect_uri: absoluteCallbackUrl(req, config.callbackUrl), grant_type: 'authorization_code', scope: 'offline_access openid profile User.Read Calendars.ReadWrite' });
+    await storage.saveCalendarConnection(saved.userId, 'microsoft', { accessToken: data.access_token, refreshToken: data.refresh_token, expiresAt: Date.now() + (Number(data.expires_in || 3600) * 1000) });
+    return res.redirect('/?calendar=microsoft-connected');
+  } catch (error) {
+    console.error('Error conectando Outlook/Microsoft 365:', error);
+    return res.redirect('/?calendar=error');
+  }
+});
 
 // ==========================================
 // HEALTH CHECK (REQUERIDO POR RENDER)
@@ -337,6 +524,7 @@ app.post('/api/business/chat', ensureAuthenticated, async (req, res) => {
     const lower = trimmed.toLowerCase();
 
     let createdTask = null;
+    let calendarSync = null;
     if (/(calendario|agenda|partido|reuni[oó]n|cita|tarea|recordatorio|comprar|llamar|ponme|anota|apunta|recu[eé]rda|agrega|a[ñn]ade)/i.test(lower)) {
       const parsed = gemini.parseVoiceReminderFast(trimmed, req.user.name || 'Usuario');
       if (parsed && parsed.title && parsed.title.length > 2) {
@@ -348,6 +536,7 @@ app.post('/api/business/chat', ensureAuthenticated, async (req, res) => {
           completed: false,
           createdAt: new Date().toISOString()
         });
+        calendarSync = await syncTaskToCalendars(userId, createdTask);
       }
     }
 
@@ -379,7 +568,8 @@ app.post('/api/business/chat', ensureAuthenticated, async (req, res) => {
     return res.json({ 
       reply: reply, 
       sources: result.sources || [],
-      createdTask: createdTask || null 
+      createdTask: createdTask || null,
+      calendarSync
     });
   } catch (error) {
     console.error('Error en /api/business/chat:', error);
@@ -413,8 +603,9 @@ app.post('/api/business/tasks', ensureAuthenticated, async (req, res) => {
       completed: false,
       createdAt: new Date().toISOString()
     });
+    const calendarSync = await syncTaskToCalendars(req.user.id, newTask);
 
-    return res.json({ message: 'Tarea creada correctamente', task: newTask });
+    return res.json({ message: 'Tarea creada correctamente', task: newTask, calendarSync });
   } catch (error) {
     console.error('Error al crear tarea:', error);
     return res.status(500).json({ error: 'Error al guardar la tarea' });

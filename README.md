@@ -49,6 +49,7 @@ La información de una empresa se mantiene asociada a su cuenta en el backend. E
 - Chat de Claryvo con contexto empresarial.
 - Protección básica frente a prompt injection en el contenido documental.
 - Tareas con prioridad, fecha y estado.
+- Sincronización automática de tareas con fecha mediante Google Calendar y Outlook/Microsoft 365 (OAuth), además de feed ICS para Windows y otros calendarios.
 - Actividad reciente.
 - PWA instalable.
 - Separación de contenido por usuario/workspace.
@@ -75,7 +76,7 @@ Copia `.env.example` a `.env` y configura, como mínimo para una instalación ge
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `GEMINI_API_KEY`
 
-Google OAuth es opcional. Nunca publiques `.env` ni claves privadas.
+Google OAuth es opcional. Para la sincronización automática hay que registrar las aplicaciones OAuth de Google y Microsoft y configurar sus variables `*_CALENDAR_*` en Render. Nunca publiques `.env` ni claves privadas.
 
 ## Documentación
 

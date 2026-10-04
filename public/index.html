@@ -762,8 +762,13 @@
           <div id="calendarSyncHelp" class="notice hidden calendar-sync-help" role="status">
             <span>📅</span>
             <div>
-              <strong>Calendario conectado por suscripción</strong>
-              <p>Para Windows/Outlook o Google Calendar, copie la URL HTTPS completa. Se actualizará cuando el calendario vuelva a consultar el feed.</p>
+              <strong>Calendario automático</strong>
+              <p>Conecte su cuenta una vez y cada tarea nueva con fecha se añadirá automáticamente a Google Calendar y/o Outlook.</p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+                <a id="connectGoogleCalendarBtn" class="secondary-btn compact" href="/api/calendar/google/connect">Google Calendar</a>
+                <a id="connectMicrosoftCalendarBtn" class="secondary-btn compact" href="/api/calendar/microsoft/connect">Outlook / Microsoft 365</a>
+              </div>
+              <small id="calendarConnectionStatus">También puede usar la suscripción para Apple Calendar, Windows y otros calendarios.</small>
               <div class="calendar-url-row">
                 <input id="calendarFeedUrl" type="text" readonly aria-label="URL HTTPS del calendario" />
                 <button id="copyCalendarUrlBtn" type="button" class="secondary-btn compact">Copiar URL</button>

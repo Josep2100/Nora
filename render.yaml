@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: nora-asistente
+    name: claryvo-asistente
     runtime: node
     plan: free
     buildCommand: npm install
@@ -27,6 +27,20 @@ services:
       - key: GOOGLE_CLIENT_SECRET
         sync: false
       - key: GOOGLE_CALLBACK_URL
+        sync: false
+      - key: GOOGLE_CALENDAR_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CALENDAR_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALENDAR_CALLBACK_URL
+        sync: false
+      - key: MICROSOFT_CLIENT_ID
+        sync: false
+      - key: MICROSOFT_CLIENT_SECRET
+        sync: false
+      - key: MICROSOFT_TENANT_ID
+        value: common
+      - key: MICROSOFT_CALENDAR_CALLBACK_URL
         sync: false
       - key: GEMINI_API_KEY
         sync: false

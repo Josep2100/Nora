@@ -290,6 +290,24 @@ async function deleteTask(userId, taskId) {
   return true;
 }
 
+async function saveCalendarConnection(userId, provider, connection) {
+  const users = loadUsers();
+  const index = users.findIndex(user => String(user.id) === String(userId));
+  if (index < 0) return null;
+  users[index].calendarConnections = users[index].calendarConnections || {};
+  users[index].calendarConnections[provider] = {
+    ...connection,
+    updatedAt: new Date().toISOString()
+  };
+  await saveUsers(users);
+  return users[index];
+}
+
+async function getCalendarConnections(userId) {
+  const user = await getUserById(userId);
+  return user?.calendarConnections || {};
+}
+
 async function getTeam(userId) {
   const user = await getUserById(userId);
   if (!user) return [];
@@ -451,6 +469,8 @@ module.exports = {
   saveTask,
   toggleTask,
   deleteTask,
+  saveCalendarConnection,
+  getCalendarConnections,
   getTeam,
   inviteTeamMember,
   removeTeamMember,
