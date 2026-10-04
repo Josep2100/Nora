@@ -57,11 +57,24 @@ function decrypt(raw) {
 function readLocalUsers() {
   ensureFiles();
   try {
-    const raw = fs.readFileSync(usersFile, 'utf8');
-    const parsed = decrypt(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    const raw = fs.readFileSync(usersFile, 'utf8').trim();
+    if (!raw) return [];
+
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (_) {
+      parsed = decrypt(raw);
+    }
+
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && parsed.encrypted) return decrypt(raw);
+    return [];
   } catch (error) {
-    console.error('No se pudo leer el almacenamiento local:', error.message);
+    console.warn('Almacenamiento local corrupto o con clave distinta. Se reinicializa el archivo local.');
+    try {
+      writeLocalUsers([]);
+    } catch (_) {}
     return [];
   }
 }
@@ -130,13 +143,23 @@ async function saveUsers(users) {
 }
 
 async function getUserByEmail(email) {
-  const normalizedEmail = String(email || '').trim().toLowerCase();
-  return loadUsers().find(user => String(user.email || '').trim().toLowerCase() === normalizedEmail) || null;
+  try {
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    return loadUsers().find(user => String(user.email || '').trim().toLowerCase() === normalizedEmail) || null;
+  } catch (error) {
+    console.error('Error buscando usuario por email:', error.message);
+    return null;
+  }
 }
 
 async function getUserById(id) {
-  const normalizedId = String(id);
-  return loadUsers().find(user => String(user.id) === normalizedId) || null;
+  try {
+    const normalizedId = String(id);
+    return loadUsers().find(user => String(user.id) === normalizedId) || null;
+  } catch (error) {
+    console.error('Error buscando usuario por id:', error.message);
+    return null;
+  }
 }
 
 async function createUser({ name, companyName, email, passwordHash, password }) {

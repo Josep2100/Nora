@@ -99,11 +99,17 @@ app.get('/api/health', (req, res) => {
 
 app.post('/api/auth/login', (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
-    if (err) return res.status(500).json({ error: 'Error interno en el servidor' });
+    if (err) {
+      console.error('Error en login:', err);
+      return res.status(500).json({ error: 'Error interno en el servidor. Inténtelo de nuevo.' });
+    }
     if (!user) return res.status(400).json({ error: info?.message || 'Credenciales inválidas' });
 
     req.logIn(user, (loginErr) => {
-      if (loginErr) return res.status(500).json({ error: 'Error al iniciar sesión' });
+      if (loginErr) {
+        console.error('Error creando sesión:', loginErr);
+        return res.status(500).json({ error: 'Error al iniciar sesión. Inténtelo de nuevo.' });
+      }
       return res.json({
         message: 'Sesión iniciada correctamente',
         user: {
