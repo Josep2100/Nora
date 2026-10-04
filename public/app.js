@@ -184,17 +184,34 @@ async function checkSession() {
 }
 
 async function loadDashboard(user) {
+  const authScreen = document.getElementById('authScreen');
+  const appScreen = document.getElementById('appScreen');
+  const fallbackDashboard = {
+    companyName: user?.companyName || 'Mi empresa',
+    companySector: 'Servicios profesionales',
+    summary: {
+      totalTasks: 0,
+      pendingTasks: 0,
+      completedTasks: 0,
+      memoryItems: 0
+    },
+    recentTasks: []
+  };
+
   try {
     const res = await fetch('/api/business/dashboard');
     if (!res.ok) {
       throw new Error('No se pudo cargar el panel empresarial.');
     }
 
-    const authScreen = document.getElementById('authScreen');
-    const appScreen = document.getElementById('appScreen');
+    let dashboardData = fallbackDashboard;
+    try {
+      dashboardData = await res.json();
+    } catch (jsonError) {
+      console.warn('No se pudo cargar el dashboard. Se usará la vista de respaldo.', jsonError);
+    }
 
-    const dashboardData = await res.json();
-    const companyNameValue = dashboardData.companyName || user.companyName || 'Mi empresa';
+    const companyNameValue = dashboardData.companyName || user?.companyName || 'Mi empresa';
     const companyNameSide = document.getElementById('companyNameSide');
     const companyNameHero = document.getElementById('companyNameHero');
     const companySectorSide = document.getElementById('companySectorSide');
@@ -203,7 +220,7 @@ async function loadDashboard(user) {
     if (companyNameHero) companyNameHero.textContent = companyNameValue;
     if (companySectorSide) companySectorSide.textContent = dashboardData.companySector || 'Servicios profesionales';
 
-    const userNameValue = user.name || user.email || 'Usuario';
+    const userNameValue = user?.name || user?.email || 'Usuario';
     const userNameTop = document.getElementById('userNameTop');
     const userAvatar = document.getElementById('userAvatar');
 
@@ -219,9 +236,25 @@ async function loadDashboard(user) {
 
     console.log('Datos de Nora Business cargados:', dashboardData);
   } catch (error) {
-    console.error('Error al cargar datos del workspace:', error);
-    if (user && !!user.email) {
-      setAuthMessage('La sesión está lista, pero el panel aún no pudo cargarse.', true);
-    }
+    console.warn('No se pudo cargar el dashboard. Se mostrará una vista de respaldo.', error);
+
+    const companyNameValue = user?.companyName || 'Mi empresa';
+    const companyNameSide = document.getElementById('companyNameSide');
+    const companyNameHero = document.getElementById('companyNameHero');
+    const companySectorSide = document.getElementById('companySectorSide');
+
+    if (companyNameSide) companyNameSide.textContent = companyNameValue;
+    if (companyNameHero) companyNameHero.textContent = companyNameValue;
+    if (companySectorSide) companySectorSide.textContent = 'Servicios profesionales';
+
+    const userNameValue = user?.name || user?.email || 'Usuario';
+    const userNameTop = document.getElementById('userNameTop');
+    const userAvatar = document.getElementById('userAvatar');
+
+    if (userNameTop) userNameTop.textContent = userNameValue;
+    if (userAvatar) userAvatar.textContent = userNameValue.trim().charAt(0).toUpperCase();
+
+    if (authScreen) authScreen.classList.add('hidden');
+    if (appScreen) appScreen.classList.remove('hidden');
   }
 }

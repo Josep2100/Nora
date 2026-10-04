@@ -68,3 +68,11 @@ test('El panel conecta tareas, documentos y chat con las rutas empresariales', (
   assert.match(geminiJs, /name: 'gemini-3\.8-flash'/);
   assert.match(geminiJs, /name: 'gemini-3\.1-pro-preview'/);
 });
+
+test('El acceso a la app no queda bloqueado si el dashboard tarda o falla al cargar', () => {
+  const appJs = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+
+  assert.match(appJs, /fallbackDashboard/);
+  assert.match(appJs, /classList\.remove\(['"]hidden['"]\)/);
+  assert.match(appJs, /console\.warn\(['"]No se pudo cargar el dashboard/);
+});
