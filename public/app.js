@@ -142,19 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (googleBtn) {
-    googleBtn.addEventListener('click', async (event) => {
+    googleBtn.addEventListener('click', (event) => {
       event.preventDefault();
-      try {
-        const res = await fetch('/api/auth/google');
-        const data = await res.json();
-        if (data.error) {
-          throw new Error(data.error);
-        }
-        window.location.href = '/api/auth/google';
-      } catch (error) {
-        console.error('Error al conectar con Google:', error);
-        setAuthMessage(error.message || 'No se pudo iniciar la autenticación con Google.', true);
-      }
+      // Redirección directa para que OAuth no espere una petición previa.
+      window.location.href = '/api/auth/google';
     });
   }
 
@@ -176,16 +167,26 @@ async function checkSession() {
 
     const data = await res.json();
     if (data.user) {
-      await loadDashboard(data.user);
+      await loadDashboard(data.user, { showWelcome: true });
     }
   } catch (error) {
     console.error('Error comprobando sesión activa:', error);
   }
 }
 
-async function loadDashboard(user) {
+async function loadDashboard(user, options = {}) {
   const authScreen = document.getElementById('authScreen');
   const appScreen = document.getElementById('appScreen');
+  // Mostrar la aplicación inmediatamente; los datos se completan en segundo plano.
+  authScreen?.classList.add('hidden');
+  appScreen?.classList.remove('hidden');
+  if (options.showWelcome) {
+    const welcome = document.getElementById('sessionWelcome');
+    if (welcome) {
+      welcome.classList.remove('hidden');
+      window.setTimeout(() => welcome.classList.add('hidden'), 850);
+    }
+  }
   const fallbackDashboard = {
     companyName: user?.companyName || 'Mi empresa',
     companySector: 'Servicios profesionales',
