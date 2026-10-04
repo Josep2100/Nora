@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Nora">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Claryvo">
   <defs>
     <linearGradient id="bg" x1="8%" y1="0%" x2="92%" y2="100%">
       <stop offset="0" stop-color="#1b1230"/>
@@ -31,8 +31,8 @@
   <circle cx="256" cy="256" r="178" fill="none" stroke="url(#ring)" stroke-opacity=".25" stroke-width="7"/>
   <circle cx="256" cy="256" r="151" fill="#9b5cff" opacity=".075" filter="url(#softGlow)"/>
 
-  <!-- Nora monogram: deliberately simple and legible at favicon size -->
-  <path d="M158 354V158h54l88 126V158h54v196h-54l-88-126v126z" fill="url(#n)"/>
+  <!-- Claryvo monogram: deliberately simple and legible at favicon size -->
+  <path d="M350 190c-25-24-54-36-88-36-57 0-102 43-102 102s45 102 102 102c34 0 63-12 88-36l-39-39c-14 14-30 21-49 21-29 0-49-19-49-48s20-48 49-48c19 0 35 7 49 21z" fill="url(#n)"/>
 
   <!-- Signature sparkle -->
   <path d="M375 105c3 22 10 29 32 32-22 3-29 10-32 32-3-22-10-29-32-32 22-3 29-10 32-32z"

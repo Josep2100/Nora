@@ -1,7 +1,7 @@
 {
-  "name": "nora-business",
+  "name": "claryvo-business",
   "version": "4.0.0",
-  "description": "Nora Business | Asistente inteligente para pequeñas empresas",
+  "description": "Claryvo | La IA que convierte conocimiento en acción",
   "main": "server.js",
   "engines": {
     "node": ">=20"

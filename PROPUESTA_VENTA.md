@@ -1,8 +1,8 @@
-# Propuesta comercial — Nora Business
+# Propuesta comercial — Claryvo
 
 ## Qué estamos construyendo
 
-Nora Business es un SaaS para pequeñas empresas que permite centralizar documentación interna, consultar conocimiento empresarial con IA y gestionar tareas.
+Claryvo es un SaaS para pequeñas empresas que permite centralizar documentación interna, consultar conocimiento empresarial con IA y gestionar tareas.
 
 ## Oferta inicial
 
@@ -10,7 +10,7 @@ Nora Business es un SaaS para pequeñas empresas que permite centralizar documen
 
 El objetivo del piloto es validar:
 
-- si Nora reduce el tiempo de búsqueda de información;
+- si Claryvo reduce el tiempo de búsqueda de información;
 - qué preguntas hacen realmente los empleados;
 - qué documentación merece integrarse;
 - qué funcionalidades justifican una suscripción.
@@ -36,4 +36,4 @@ Los precios deben validarse con clientes reales antes de fijarlos definitivament
 
 ## Mensaje de venta
 
-> "Nora convierte la documentación de su empresa en un asistente que su equipo puede consultar en lenguaje natural, mientras mantiene las tareas y la información organizadas en un único espacio."
+> "Claryvo convierte la documentación de su empresa en un asistente que su equipo puede consultar en lenguaje natural, mientras mantiene las tareas y la información organizadas en un único espacio."

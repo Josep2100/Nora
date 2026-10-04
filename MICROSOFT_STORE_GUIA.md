@@ -1,6 +1,6 @@
-# Guía Oficial para Publicar Nora en la Microsoft Store
+# Guía Oficial para Publicar Claryvo en la Microsoft Store
 
-Esta guía contiene todo lo necesario para empaquetar, publicar y monetizar **Nora** en la **Microsoft Store** (Windows 10 y Windows 11).
+Esta guía contiene todo lo necesario para empaquetar, publicar y monetizar **Claryvo** en la **Microsoft Store** (Windows 10 y Windows 11).
 
 ---
 
@@ -37,7 +37,7 @@ Al crear el envío en el **Microsoft Partner Center**, rellena los campos con es
 
 ### 📌 Título de la aplicación:
 ```text
-Nora: Tu Asistente Personal con IA
+Claryvo: La IA que convierte conocimiento en acción
 ```
 
 ### 📌 Descripción Corta (Resumen para la tienda):
@@ -47,29 +47,29 @@ Asistente personal inteligente para Windows con control por voz en tiempo real, 
 
 ### 📌 Descripción Completa:
 ```text
-Nora es tu nueva asistente personal inteligente diseñada para facilitarte el día a día directamente desde tu ordenador con Windows.
+Claryvo es tu asistente inteligente diseñado para convertir el conocimiento de tu empresa en acciones desde Windows.
 
 🌟 CARACTERÍSTICAS PRINCIPALES:
 
 🎙️ CONTROL POR VOZ INSTANTÁNEO:
-Habla con Nora de forma natural. Te responderá de inmediato por voz y guardará tus recordatorios y tareas sin que tengas que escribir.
+Habla con Claryvo de forma natural. Te responderá de inmediato y guardará tus tareas sin que tengas que escribir.
 
 🧠 EL BAÚL DE RECUERDOS:
-¿Dónde guardaste el pasaporte, las llaves o un documento importante? Díselo a Nora y te lo recordará en el acto cuando lo necesites.
+¿Dónde está un procedimiento o documento importante? Díselo a Claryvo y lo tendrás disponible cuando lo necesites.
 
 📸 ESCÁNER DE DOCUMENTOS Y CITAS MÉDICAS:
-Haz una foto con la cámara a tus volantes médicos, citas o tickets, y Nora extraerá automáticamente la fecha, hora y detalles con visión artificial.
+Carga un documento y Claryvo extraerá su contenido para incorporarlo al conocimiento de tu empresa.
 
 🛒 LISTA DE LA COMPRA POR PASILLOS:
-Dicta los productos que necesitas y Nora los agrupará automáticamente por pasillos del supermercado para que ahorres tiempo al comprar.
+Indica una acción y Claryvo la convertirá en una tarea organizada para tu equipo.
 
 📻 PODCAST MAÑANERO DE 60 SEGUNDOS:
-Cada mañana, Nora te prepara un breve resumen hablado con tus prioridades y tareas del día para que empieces con energía.
+Claryvo te ayuda a mantener visibles tus prioridades y tareas del día.
 
 🔒 PRIVACIDAD Y SEGURIDAD:
 Tus datos y recordatorios están cifrados y protegidos de forma segura.
 
-¡Descarga Nora y disfruta de una asistente personal dedicada a hacer tu vida más fácil y productiva!
+¡Descarga Claryvo y convierte el conocimiento de tu empresa en acción!
 ```
 
 ### 📌 Palabras Clave de Búsqueda (Keywords):
@@ -101,5 +101,5 @@ En la sección **"Pricing and availability" (Precios y disponibilidad)** del pan
 
 1. Haz clic en **"Submit to the Store" (Enviar a la tienda)**.
 2. El equipo de certificación de Microsoft revisará la app (suele tardar entre 24 y 48 horas).
-3. Una vez aprobada, **Nora estará disponible en la Microsoft Store para todo el mundo**.
+3. Una vez aprobada, **Claryvo estará disponible en la Microsoft Store para todo el mundo**.
 

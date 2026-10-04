@@ -1,5 +1,5 @@
 /*
- * Nora Business — soporte de carga PDF
+ * Claryvo — soporte de carga PDF
  * Este archivo funciona junto a business.js sin sustituir su lógica.
  */
 (() => {
@@ -164,7 +164,7 @@
 
       showMessage(
         result.message ||
-          'PDF incorporado correctamente. Nora ya puede consultarlo.',
+          'PDF incorporado correctamente. Claryvo ya puede consultarlo.',
         'success'
       );
 
@@ -194,7 +194,7 @@
 
     } catch (error) {
       console.error(
-        'Error cargando PDF en Nora Business:',
+        'Error cargando PDF en Claryvo:',
         error
       );
 
@@ -381,7 +381,7 @@
 
     if (task.dueDate && isFullView) {
       const gcalLink = document.createElement('a');
-      gcalLink.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(task.title)}&dates=${formatGoogleCalDates(task.dueDate)}&details=${encodeURIComponent(task.description || 'Tarea asignada en Nora Business')}`;
+      gcalLink.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(task.title)}&dates=${formatGoogleCalDates(task.dueDate)}&details=${encodeURIComponent(task.description || 'Tarea asignada en Claryvo')}`;
       gcalLink.target = '_blank';
       gcalLink.rel = 'noopener';
       gcalLink.className = 'cal-link';
@@ -507,7 +507,7 @@
           preview.append(row);
         });
       } else {
-        addEmptyState(preview, 'Añada un procedimiento para que Nora pueda consultarlo.');
+        addEmptyState(preview, 'Añada un procedimiento para que Claryvo pueda consultarlo.');
       }
     }
   }
@@ -638,7 +638,7 @@
         upcoming.forEach(task => {
           const dueFmt = formatDate(task.dueDate);
           try {
-            new Notification('Recordatorio Nora Business (Entrega próxima)', {
+            new Notification('Recordatorio Claryvo (Entrega próxima)', {
               body: `La tarea "${task.title}" vence en menos de 24 horas (${dueFmt}).`,
               icon: '/icon-192.png'
             });
@@ -719,7 +719,7 @@
     const body = document.createElement('div');
     const label = document.createElement('span');
     label.className = 'message-label';
-    label.textContent = role === 'nora' ? 'Nora' : 'Usted';
+    label.textContent = role === 'nora' ? 'Claryvo' : 'Usted';
     const paragraph = document.createElement('p');
     paragraph.textContent = text;
     body.append(label, paragraph);

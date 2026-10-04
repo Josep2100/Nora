@@ -1,8 +1,8 @@
-# Nora Business — Producto
+# Claryvo — Producto
 
 ## Propuesta de valor
 
-Nora Business ayuda a pequeñas empresas a encontrar información interna y organizar acciones sin tener que buscar manualmente entre múltiples documentos y herramientas.
+Claryvo ayuda a pequeñas empresas a encontrar información interna y organizar acciones sin tener que buscar manualmente entre múltiples documentos y herramientas.
 
 ## Cliente inicial
 
@@ -35,4 +35,4 @@ El primer comprador debería ser el propietario, gerente o responsable administr
 - "Resume el procedimiento de atención al cliente."
 - "Añade una tarea para revisar el presupuesto el viernes."
 
-Nora debe reconocer cuándo no tiene información suficiente y evitar inventar procedimientos.
+Claryvo debe reconocer cuándo no tiene información suficiente y evitar inventar procedimientos.

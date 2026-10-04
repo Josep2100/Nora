@@ -9,10 +9,12 @@ El nombre **Nora** ya está siendo utilizado por varias aplicaciones y empresas 
 - [NORA AI](https://noraai.app/about), un asistente empresarial con varios agentes especializados.
 - [Nora: Built for growth](https://trynora.net/app), una aplicación para gestionar un negocio.
 
-## Recomendación
+## Decisión de marca
 
-No conviene presentar el producto públicamente como **Nora** o **Nora Business** sin una búsqueda marcaria y de dominios más profunda. Como dirección creativa provisional, **NoraFlow** diferencia mejor la propuesta de convertir conversaciones en acciones y tareas, pero el nombre final debe validarse antes de cambiar la identidad completa.
+Se adopta **Claryvo** como nombre del producto, con el lema: **“La IA que convierte conocimiento en acción.”** La elección comunica claridad y acción y funciona en español e inglés.
+
+La comprobación pública encontró usos no competidores directos, pero sí una web editorial en `claryvo.org`, una aplicación Android y una sociedad llamada CLARYVO RM LLP. Por tanto, antes del lanzamiento comercial se debe completar la búsqueda formal en OEPM, EUIPO y USPTO y asegurar un dominio adecuado.
 
 ## Siguiente pieza de marketing
 
-El repositorio no contiene actualmente un vídeo de producto editable. Antes de producir uno nuevo conviene cerrar el nombre, el dominio y la identidad visual; después se puede grabar un recorrido corto con este hilo: “escribo una tarea → se guarda → aparece en el calendario del móvil y del PC”.
+El repositorio no contiene actualmente un vídeo de producto editable. El nuevo vídeo debe usar Claryvo y este hilo: “escribo una tarea → se guarda → aparece en el calendario del móvil y del PC”.

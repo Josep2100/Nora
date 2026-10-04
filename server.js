@@ -321,7 +321,7 @@ app.get('/api/business/dashboard', ensureAuthenticated, async (req, res) => {
 });
 
 // ==========================================
-// 4. RUTAS DE NORA BUSINESS (IA, KNOWLEDGE & TAREAS)
+// 4. RUTAS DE CLARYVO (IA, KNOWLEDGE & TAREAS)
 // ==========================================
 
 // Endpoint de Chat con IA (Requerido por los tests de Node.js)
@@ -342,7 +342,7 @@ app.post('/api/business/chat', ensureAuthenticated, async (req, res) => {
       if (parsed && parsed.title && parsed.title.length > 2) {
         createdTask = await storage.saveTask(userId, {
           title: parsed.title,
-          description: `Registrado automáticamente desde el asistente Nora`,
+          description: `Registrado automáticamente desde el asistente Claryvo`,
           dueDate: parsed.dueDate || null,
           priority: 'medium',
           completed: false,
@@ -506,14 +506,14 @@ function formatIcsDate(dateObj) {
   return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 }
 
-function generateTasksIcs(tasks, companyName = 'Nora Business') {
+function generateTasksIcs(tasks, companyName = 'Claryvo') {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Nora Business//ES',
+    'PRODID:-//Claryvo//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    `X-WR-CALNAME:Nora Business - ${companyName}`,
+    `X-WR-CALNAME:Claryvo - ${companyName}`,
     'X-WR-TIMEZONE:UTC'
   ];
 
@@ -523,7 +523,7 @@ function generateTasksIcs(tasks, companyName = 'Nora Business') {
     if (isNaN(startDate.getTime())) continue;
 
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
-    const uid = `task-${task.id || Math.random().toString(36).slice(2)}@nora.business`;
+    const uid = `task-${task.id || Math.random().toString(36).slice(2)}@claryvo.app`;
     const dtStamp = formatIcsDate(new Date());
     const dtStart = formatIcsDate(startDate);
     const dtEnd = formatIcsDate(endDate);
@@ -567,7 +567,7 @@ async function sendCalendarFeed(res, user) {
 
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.setHeader('Content-Disposition', `inline; filename="nora-tareas-${encodeURIComponent(companyName)}.ics"`);
+  res.setHeader('Content-Disposition', `inline; filename="claryvo-tareas-${encodeURIComponent(companyName)}.ics"`);
   return res.send(icsContent);
 }
 
@@ -732,7 +732,7 @@ storage.initStorage()
   .catch((error) => console.warn('No se pudo inicializar almacenamiento persistente:', error.message))
   .finally(() => {
     app.listen(PORT, () => {
-      console.log(`🚀 Servidor Nora Business iniciado correctamente en el puerto ${PORT}`);
+      console.log(`🚀 Servidor Claryvo iniciado correctamente en el puerto ${PORT}`);
       console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });
   });

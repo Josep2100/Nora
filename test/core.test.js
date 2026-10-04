@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-test('Nora Business incluye los ficheros públicos principales', () => {
+test('Claryvo incluye los ficheros públicos principales', () => {
   const root = path.join(__dirname, '..');
   for (const file of [
     'server.js',
@@ -19,9 +19,9 @@ test('Nora Business incluye los ficheros públicos principales', () => {
   }
 });
 
-test('El producto presenta las funciones principales de Nora Business', () => {
+test('El producto presenta las funciones principales de Claryvo', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
-  for (const text of ['Nora Business', 'Conocimiento', 'Tareas', 'Equipo', 'Actividad', 'Pregunte a Nora']) {
+  for (const text of ['Claryvo', 'Conocimiento', 'Tareas', 'Equipo', 'Actividad', 'Pregunte a Claryvo']) {
     assert.match(html, new RegExp(text));
   }
 });

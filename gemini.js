@@ -17,19 +17,19 @@ function generateWithTimeout(promise, timeoutMs = 6500) {
 const PERSONALITY_PROMPTS = {
   executive: {
     name: 'Ejecutiva',
-    tone: 'Eres Nora, una asistente ejecutiva de alto nivel para empresas y profesionales. Tu trato es strictly formal, educado, atento y muy eficiente. Tratas siempre al usuario de "usted". Evitas totalmente usar palabras de excesiva confianza (como "cielo", "corazón", "cariño"). Tus respuestas son concisas, claras y profesionales.',
+    tone: 'Eres Claryvo, una asistente ejecutiva de alto nivel para empresas y profesionales. Tu trato es strictly formal, educado, atento y muy eficiente. Tratas siempre al usuario de "usted". Evitas totalmente usar palabras de excesiva confianza (como "cielo", "corazón", "cariño"). Tus respuestas son concisas, claras y profesionales.',
     voicePrefix: 'Estimado usuario, ',
     confirmPrefix: 'Registrado con éxito: '
   },
   affectionate: {
     name: 'Cariñosa',
-    tone: 'Eres Nora, una asistente atenta, cordial y educada. Mantienes un trato profesional pero amigable y respetuoso.',
+    tone: 'Eres Claryvo, una asistente atenta, cordial y educada. Mantienes un trato profesional pero amigable y respetuoso.',
     voicePrefix: 'Hola, ',
     confirmPrefix: 'Guardado correctamente: '
   },
   cheerful: {
     name: 'Alegre',
-    tone: 'Eres Nora, una asistente eficiente y motivadora, orientada a mantener una excelente productividad profesional.',
+    tone: 'Eres Claryvo, una asistente eficiente y motivadora, orientada a mantener una excelente productividad profesional.',
     voicePrefix: 'Saludos. ',
     confirmPrefix: 'Anotado en su agenda: '
   }
@@ -57,7 +57,7 @@ function inferCategory(text) {
 
 function cleanReminderTitle(rawText) {
   let cleaned = String(rawText || '').trim();
-  cleaned = cleaned.replace(/^(nora|oye nora|por favor|hola)\s*,?\s*/i, '');
+  cleaned = cleaned.replace(/^(claryvo|oye claryvo|nora|oye nora|por favor|hola)\s*,?\s*/i, '');
   cleaned = cleaned.replace(/^(recuérdame|recuerdame|recuerda|apúntame|apuntame|apunta|ponme|anota|añade|agrega|no olvides|no te olvides de|tengo que|debo|hay que)\s+/i, '');
   cleaned = cleaned.replace(/^(que tengo que|de que|de)\s+/i, '');
   cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
@@ -181,7 +181,7 @@ async function parseVoiceReminder(voiceTranscript, userName = 'Usuario', persona
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const pers = PERSONALITY_PROMPTS[personality] || PERSONALITY_PROMPTS.executive;
 
-    const prompt = `Actúa como Nora. ${pers.tone}
+        const prompt = `Actúa como Claryvo. ${pers.tone}
 El usuario (${userName}) dictó: "${voiceTranscript}"
 
 Devuelve un JSON strictly con este formato:
@@ -265,7 +265,7 @@ Devuelve un JSON estrictamente así:
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
         const vaultContext = memoryVault.map(m => `- ${m.item}: ${m.location} (registrado: "${m.fullText}")`).join('\n');
         
-        const prompt = `Eres Nora. ${pers.tone}
+        const prompt = `Eres Claryvo. ${pers.tone}
 El usuario (${userName}) le pregunta: "${text}"
 
 Memoria registrada:
@@ -359,7 +359,7 @@ async function generateMorningPodcast(userName = 'Usuario', taskList = [], perso
 
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const prompt = `Eres Nora. ${pers.tone}
+        const prompt = `Eres Claryvo. ${pers.tone}
 Genera un guión breve de audio de 45 segundos para ${userName}.
 Información:
 - ${pendingText}
@@ -369,7 +369,7 @@ Información:
     const script = res.response.text().trim().replace(/[*#_]/g, '');
 
     return {
-      title: 'Resumen Ejecutivo con Nora',
+      title: 'Resumen Ejecutivo con Claryvo',
       script: script || `Buenos días, ${userName}. Le confirmo las tareas registradas para la jornada de hoy.`
     };
   } catch (error) {
@@ -406,7 +406,7 @@ async function generateConchiResponse(userMessage, taskList = [], memoryVault = 
   try {
     if (!genAI || !process.env.GEMINI_API_KEY) {
       return {
-        response: `Saludos, ${userName}. Soy Nora, su asistente virtual. Puedo colaborar en la gestión de recordatorios, organización de datos y planificación de tareas. ¿En qué puedo asistisle en este momento?`
+        response: `Saludos, ${userName}. Soy Claryvo, su asistente virtual. Puedo colaborar en la gestión de recordatorios, organización de datos y planificación de tareas. ¿En qué puedo asistirle en este momento?`
       };
     }
 
@@ -421,7 +421,7 @@ async function generateConchiResponse(userMessage, taskList = [], memoryVault = 
       ? `Registro de memoria: ${memoryVault.map(m => `${m.item} ->${m.location}`).join('; ')}.`
       : `No hay registros adicionales almacenados.`;
 
-    const prompt = `Eres Nora, asistente ejecutiva profesional. ${pers.tone}
+    const prompt = `Eres Claryvo, asistente ejecutiva profesional. ${pers.tone}
 El usuario se llama ${userName}.
 ${taskContext}
 ${memoryContext}
@@ -482,7 +482,7 @@ function localSmartFallback(userMessage, knowledgeContext = '', taskList = [], c
     };
   }
 
-  // 3. Consulta general de conocimiento o qué sabe Nora de la empresa
+  // 3. Consulta general de conocimiento o qué sabe Claryvo de la empresa
   if (/(qu[eé]\s+sabes|documentos|informaci[oó]n|base de conocimiento|conocimiento|procedimiento|manual|servicios|tarifas|qu[eé]\s+tienes|datos\s+de\s+la\s+empresa|a\s+qu[eé]\s+nos\s+dedicamos|qu[eé]\s+hacemos)/i.test(normalized)) {
     if (knowledgeContext && knowledgeContext.trim()) {
       const chunks = knowledgeContext.split(/\n\n(?=DOCUMENTO \d+:)/).filter(Boolean);
@@ -546,7 +546,7 @@ function localSmartFallback(userMessage, knowledgeContext = '', taskList = [], c
   // 5. Saludo o estado
   if (/hola|buenos d[ií]as|buenas tardes|qu[eé] tal|saludos|qui[eé]n eres|c[oó]mo est[aá]s/i.test(normalized)) {
     return {
-      response: `Saludos, ${userName}. Soy Nora, asistente inteligente para **${companyName}**. Su espacio empresarial se encuentra activo y 100% operativo. ¿En qué puedo asistirle hoy?`,
+      response: `Saludos, ${userName}. Soy Claryvo, asistente inteligente para **${companyName}**. Su espacio empresarial se encuentra activo y 100% operativo. ¿En qué puedo asistirle hoy?`,
       sources: []
     };
   }
@@ -594,7 +594,7 @@ async function generateBusinessResponse(userMessage, knowledgeContext = '', task
 
     const hasKnowledge = Boolean(knowledgeContext && knowledgeContext.trim());
 
-    const prompt = `Eres Nora Business, la asistente ejecutiva e inteligente para la empresa "${companyName}".
+    const prompt = `Eres Claryvo, la asistente ejecutiva e inteligente para la empresa "${companyName}".
 
 Usuario: ${userName}
 

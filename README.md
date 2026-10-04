@@ -1,10 +1,10 @@
-# Nora Business
+# Claryvo
 
-**Nora Business** es un asistente inteligente orientado a pequeñas empresas. Centraliza conocimiento interno, documentos y tareas para que los equipos puedan consultar información y convertirla en acciones.
+**Claryvo** es la IA que convierte conocimiento en acción. Centraliza conocimiento interno, documentos y tareas para que los equipos puedan consultar información y convertirla en acciones.
 
 ## Qué problema resuelve
 
-La información de muchas pequeñas empresas está repartida entre documentos, correos, procedimientos y conversaciones. Nora crea un espacio empresarial donde el usuario puede:
+La información de muchas pequeñas empresas está repartida entre documentos, correos, procedimientos y conversaciones. Claryvo crea un espacio empresarial donde el usuario puede:
 
 - consultar la base de conocimiento con lenguaje natural;
 - guardar procedimientos, manuales, FAQs y documentación;
@@ -46,7 +46,7 @@ La información de una empresa se mantiene asociada a su cuenta en el backend. E
 - Workspace empresarial por cuenta.
 - Nombre y sector de empresa configurables.
 - Base de conocimiento con texto y archivos TXT/MD/CSV/JSON.
-- Chat de Nora con contexto empresarial.
+- Chat de Claryvo con contexto empresarial.
 - Protección básica frente a prompt injection en el contenido documental.
 - Tareas con prioridad, fecha y estado.
 - Actividad reciente.

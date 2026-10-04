@@ -1,4 +1,4 @@
-const CACHE = 'nora-business-v3';
+const CACHE = 'claryvo-v1';
 const ASSETS = ['/', '/index.html', '/business.css', '/business.js', '/app.js', '/icon.svg', '/icon-192.png', '/icon-512.png', '/manifest.json'];
 
 self.addEventListener('install', event => {

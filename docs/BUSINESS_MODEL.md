@@ -17,7 +17,7 @@ No intentar vender a grandes empresas al principio. Conseguir 3–5 pilotos pequ
 
 ### Oferta piloto
 
-> "Pruebe Nora Business durante 14 días con una parte de su documentación y compruebe si reduce el tiempo que su equipo dedica a buscar información."
+> "Pruebe Claryvo durante 14 días con una parte de su documentación y compruebe si reduce el tiempo que su equipo dedica a buscar información."
 
 ## Métricas
 

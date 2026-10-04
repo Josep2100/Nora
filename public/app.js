@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (authSubtitle) {
       authSubtitle.textContent = isLoginView
         ? 'Acceda al espacio inteligente de su empresa.'
-        : 'Configure su empresa y empiece a trabajar con Nora.';
+        : 'Configure su empresa y empiece a trabajar con Claryvo.';
     }
 
     if (authMessage) authMessage.textContent = '';
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.textContent = submitBtn.dataset.originalText || 'Entrar en Nora →';
+      submitBtn.textContent = submitBtn.dataset.originalText || 'Entrar en Claryvo →';
         }
       }
     });
@@ -234,7 +234,7 @@ async function loadDashboard(user) {
       detail: { user, dashboard: dashboardData }
     }));
 
-    console.log('Datos de Nora Business cargados:', dashboardData);
+    console.log('Datos de Claryvo cargados:', dashboardData);
   } catch (error) {
     console.warn('No se pudo cargar el dashboard. Se mostrará una vista de respaldo.', error);
 
