@@ -1030,10 +1030,11 @@
         </label>
 
         <label>
-          Detalles
+          Detalles (obligatorio)
 
           <textarea
             id="taskDetails"
+            required
             maxlength="1000"
             rows="4"
             placeholder="Información adicional..."
@@ -1067,11 +1068,12 @@
           </label>
 
           <label>
-            Fecha límite
+            Fecha límite (obligatoria)
 
             <input
               id="taskDue"
               type="datetime-local"
+              required
             />
 
           </label>

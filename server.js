@@ -287,7 +287,7 @@ app.get('/api/calendar/connections', ensureAuthenticated, async (req, res) => {
 
 app.get('/api/calendar/google/connect', ensureAuthenticated, (req, res) => {
   const config = calendarConfig.google;
-  if (!config.clientId || !config.clientSecret) return res.status(501).send('Google Calendar todavía no está configurado en Claryvo.');
+  if (!config.clientId || !config.clientSecret) return res.redirect('/?calendar=google-not-configured');
   const state = rememberCalendarOAuth(req, 'google');
   const params = new URLSearchParams({ client_id: config.clientId, redirect_uri: absoluteCallbackUrl(req, config.callbackUrl), response_type: 'code', access_type: 'offline', prompt: 'consent', scope: 'openid email profile https://www.googleapis.com/auth/calendar.events', state });
   return res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
@@ -310,7 +310,7 @@ app.get('/api/calendar/google/callback', async (req, res) => {
 
 app.get('/api/calendar/microsoft/connect', ensureAuthenticated, (req, res) => {
   const config = calendarConfig.microsoft;
-  if (!config.clientId || !config.clientSecret) return res.status(501).send('Outlook/Microsoft 365 todavía no está configurado en Claryvo.');
+  if (!config.clientId || !config.clientSecret) return res.redirect('/?calendar=microsoft-not-configured');
   const state = rememberCalendarOAuth(req, 'microsoft');
   const params = new URLSearchParams({ client_id: config.clientId, response_type: 'code', redirect_uri: absoluteCallbackUrl(req, config.callbackUrl), response_mode: 'query', scope: 'offline_access openid profile User.Read Calendars.ReadWrite', state });
   return res.redirect(`https://login.microsoftonline.com/${encodeURIComponent(config.tenantId)}/oauth2/v2.0/authorize?${params}`);
@@ -591,8 +591,8 @@ app.get('/api/business/tasks', ensureAuthenticated, async (req, res) => {
 app.post('/api/business/tasks', ensureAuthenticated, async (req, res) => {
   try {
     const { title, description, dueDate, priority } = req.body;
-    if (!title) {
-      return res.status(400).json({ error: 'El título de la tarea es obligatorio' });
+    if (!String(title || '').trim() || !String(description || '').trim() || !dueDate || !['low', 'medium', 'high'].includes(priority) || Number.isNaN(new Date(dueDate).getTime())) {
+      return res.status(400).json({ error: 'Para crear la tarea debe completar título, detalles, prioridad y fecha límite.' });
     }
 
     const newTask = await storage.saveTask(req.user.id, {

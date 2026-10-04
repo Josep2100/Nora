@@ -737,6 +737,20 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    const calendarMessage = new URLSearchParams(window.location.search).get('calendar');
+    const calendarMessages = {
+      'google-not-configured': ['Google Calendar aún no está configurado. Añade sus credenciales OAuth en Render.', 'info'],
+      'microsoft-not-configured': ['Outlook/Microsoft 365 aún no está configurado. Añade sus credenciales OAuth en Render.', 'info'],
+      'google-connected': ['Google Calendar conectado correctamente.', 'success'],
+      'microsoft-connected': ['Outlook/Microsoft 365 conectado correctamente.', 'success'],
+      cancelled: ['Conexión de calendario cancelada.', 'info'],
+      error: ['No se pudo completar la conexión del calendario.', 'error']
+    };
+    if (calendarMessage && calendarMessages[calendarMessage]) {
+      const [message, type] = calendarMessages[calendarMessage];
+      showToast(message, type);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
     // Pedir permiso para notificaciones de recordatorio si está soportado
     if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
       Notification.requestPermission().catch(() => {});
@@ -782,18 +796,23 @@
     taskForm?.addEventListener('submit', async event => {
       event.preventDefault();
       const title = document.getElementById('taskTitle')?.value.trim() || '';
-      if (!title) return;
+      const details = document.getElementById('taskDetails')?.value.trim() || '';
+      const dueValue = document.getElementById('taskDue')?.value || '';
+      const priority = document.getElementById('taskPriority')?.value || '';
+      if (!title || !details || !dueValue || !priority) {
+        showToast('Completa todos los campos de la tarea antes de guardarla.', 'error');
+        return;
+      }
 
       setFormLoading(taskForm, true, 'Guardando...');
       try {
-        const dueValue = document.getElementById('taskDue')?.value || '';
         const result = await requestJson('/api/business/tasks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title,
-            description: document.getElementById('taskDetails')?.value.trim() || '',
-            priority: document.getElementById('taskPriority')?.value || 'medium',
+            description: details,
+            priority,
             dueDate: dueValue ? new Date(dueValue).toISOString() : null
           })
         });
