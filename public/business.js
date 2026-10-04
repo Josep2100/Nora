@@ -583,6 +583,9 @@
           ? `\nFuentes: ${result.sources.join(', ')}`
           : '';
         appendChatMessage('nora', `${result.reply || 'No hay respuesta disponible.'}${sources}`);
+        if (result.createdTask) {
+          await refreshWorkspace();
+        }
       } catch (error) {
         appendChatMessage('nora', error.message || 'No se pudo completar la consulta.');
       } finally {

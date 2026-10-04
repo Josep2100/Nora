@@ -328,22 +328,59 @@ app.get('/api/business/dashboard', ensureAuthenticated, async (req, res) => {
 app.post('/api/business/chat', ensureAuthenticated, async (req, res) => {
   try {
     const { message } = req.body;
-    if (!message) {
+    if (!message || !String(message).trim()) {
       return res.status(400).json({ error: 'El mensaje es obligatorio' });
     }
 
-    const knowledgeContext = await storage.getKnowledgeContext(req.user.id);
-    const tasks = await storage.getTasks(req.user.id);
+    const trimmed = String(message).trim();
+    const userId = req.user.id;
+    const lower = trimmed.toLowerCase();
+
+    let createdTask = null;
+    if (/(calendario|agenda|partido|reuni[oó]n|cita|tarea|recordatorio|comprar|llamar|ponme|anota|apunta|recu[eé]rda|agrega|a[ñn]ade)/i.test(lower)) {
+      const parsed = gemini.parseVoiceReminderFast(trimmed, req.user.name || 'Usuario');
+      if (parsed && parsed.title && parsed.title.length > 2) {
+        createdTask = await storage.saveTask(userId, {
+          title: parsed.title,
+          description: `Registrado automáticamente desde el asistente Nora`,
+          dueDate: parsed.dueDate || null,
+          priority: 'medium',
+          completed: false,
+          createdAt: new Date().toISOString()
+        });
+      }
+    }
+
+    const knowledgeContext = await storage.getKnowledgeContext(userId);
+    const tasks = await storage.getTasks(userId);
     const companyName = req.user.companyName || req.user.company_name || 'la empresa';
     const result = await gemini.generateBusinessResponse(
-      message,
+      trimmed,
       knowledgeContext,
       tasks,
       companyName,
       req.user.name || req.user.email || 'Usuario'
     );
 
-    return res.json({ reply: result.response, sources: result.sources || [] });
+    let reply = result.response;
+    if (createdTask) {
+      const dueFormatted = createdTask.dueDate 
+        ? new Date(createdTask.dueDate).toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })
+        : null;
+      const confirmText = dueFormatted 
+        ? `He registrado en su agenda y tareas: **${createdTask.title}** para el **${dueFormatted}**.` 
+        : `He registrado en sus tareas pendientes: **${createdTask.title}**.`;
+
+      if (!reply || reply.includes('no puede consultar') || reply.includes('saturado')) {
+        reply = confirmText;
+      }
+    }
+
+    return res.json({ 
+      reply: reply, 
+      sources: result.sources || [],
+      createdTask: createdTask || null 
+    });
   } catch (error) {
     console.error('Error en /api/business/chat:', error);
     return res.status(500).json({ error: 'Error al procesar el mensaje con la IA' });
