@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: claryvo-asistente
+    name: claryvo-ia
     runtime: node
     plan: free
     buildCommand: npm install
