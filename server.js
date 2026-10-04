@@ -573,7 +573,7 @@ async function sendCalendarFeed(res, user) {
 
 // Feed público protegido por un token aleatorio. Las apps de calendario
 // consultan esta URL periódicamente y reciben las tareas nuevas automáticamente.
-app.get('/calendar/feed/:token.ics', async (req, res) => {
+app.get(['/calendar/feed/:token.ics', '/calendar/feed/:token'], async (req, res) => {
   try {
     const user = await storage.getUserByCalendarToken(req.params.token);
     if (!user) return res.status(404).send('Calendario no encontrado');

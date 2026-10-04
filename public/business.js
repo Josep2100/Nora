@@ -285,11 +285,26 @@
 
     try {
       const feed = await requestJson('/api/business/calendar/feed');
-      // webcal:// permite que el sistema operativo abra la aplicación de calendario
-      // elegida. La URL HTTPS queda disponible como respaldo para Outlook/Google.
-      button.href = feed.webcalUrl || feed.httpsUrl;
-      button.title = 'Abrir el calendario del dispositivo y suscribirse a las tareas';
-      button.dataset.httpsUrl = feed.httpsUrl || '';
+      // Windows/Outlook y Google Calendar necesitan una URL HTTPS completa.
+      button.href = feed.httpsUrl;
+      button.title = 'Abrir el feed HTTPS del calendario';
+      button.dataset.webcalUrl = feed.webcalUrl || '';
+      const help = document.getElementById('calendarSyncHelp');
+      const urlInput = document.getElementById('calendarFeedUrl');
+      const copyButton = document.getElementById('copyCalendarUrlBtn');
+      if (help && urlInput) {
+        urlInput.value = feed.httpsUrl || '';
+        help.classList.remove('hidden');
+        copyButton?.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(feed.httpsUrl);
+            showToast('URL HTTPS copiada. Péguela en “Suscribirse desde la web”.', 'success');
+          } catch (_) {
+            urlInput.select();
+            showToast('Seleccione y copie la URL HTTPS manualmente.', 'info');
+          }
+        }, { once: true });
+      }
     } catch (error) {
       // El enlace .ics sigue funcionando si el feed no está disponible.
       console.warn('No se pudo preparar la suscripción de calendario:', error.message);
