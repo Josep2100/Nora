@@ -239,6 +239,96 @@ async function saveTask(userId, task) {
   return safeTask;
 }
 
+async function toggleTask(userId, taskId) {
+  const users = loadUsers();
+  const userIndex = users.findIndex(user => String(user.id) === String(userId));
+  if (userIndex < 0) return null;
+
+  const tasks = Array.isArray(users[userIndex].tasks) ? users[userIndex].tasks : [];
+  const taskIndex = tasks.findIndex(t => String(t.id) === String(taskId));
+  if (taskIndex < 0) return null;
+
+  tasks[taskIndex].completed = !tasks[taskIndex].completed;
+  tasks[taskIndex].completedAt = tasks[taskIndex].completed ? new Date().toISOString() : null;
+  users[userIndex].tasks = tasks;
+  await saveUsers(users);
+  return tasks[taskIndex];
+}
+
+async function deleteTask(userId, taskId) {
+  const users = loadUsers();
+  const userIndex = users.findIndex(user => String(user.id) === String(userId));
+  if (userIndex < 0) return false;
+
+  const tasks = Array.isArray(users[userIndex].tasks) ? users[userIndex].tasks : [];
+  users[userIndex].tasks = tasks.filter(t => String(t.id) !== String(taskId));
+  await saveUsers(users);
+  return true;
+}
+
+async function getTeam(userId) {
+  const user = await getUserById(userId);
+  if (!user) return [];
+  const ownerMember = {
+    id: `owner-${user.id}`,
+    name: user.name || 'Propietario',
+    email: user.email,
+    role: 'Propietario',
+    permissions: 'all',
+    status: 'activo',
+    isOwner: true,
+    invitedAt: user.createdAt || new Date().toISOString()
+  };
+  const members = Array.isArray(user.team) ? user.team : [];
+  return [ownerMember, ...members];
+}
+
+async function inviteTeamMember(userId, { name, email, role, permissions }) {
+  const users = loadUsers();
+  const userIndex = users.findIndex(user => String(user.id) === String(userId));
+  if (userIndex < 0) return null;
+
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  users[userIndex].team = Array.isArray(users[userIndex].team) ? users[userIndex].team : [];
+
+  const existingIndex = users[userIndex].team.findIndex(m => String(m.email).toLowerCase() === normalizedEmail);
+  if (existingIndex >= 0) {
+    const existing = users[userIndex].team[existingIndex];
+    existing.name = String(name || existing.name || '').trim();
+    existing.role = role || existing.role || 'Miembro';
+    existing.permissions = permissions || existing.permissions || 'editor';
+    existing.updatedAt = new Date().toISOString();
+    users[userIndex].team[existingIndex] = existing;
+    await saveUsers(users);
+    return existing;
+  }
+
+  const newMember = {
+    id: crypto.randomUUID(),
+    name: String(name || normalizedEmail.split('@')[0]).trim(),
+    email: normalizedEmail,
+    role: role || 'Miembro',
+    permissions: permissions || 'editor',
+    status: 'invitado',
+    isOwner: false,
+    invitedAt: new Date().toISOString()
+  };
+
+  users[userIndex].team.push(newMember);
+  await saveUsers(users);
+  return newMember;
+}
+
+async function removeTeamMember(userId, memberId) {
+  const users = loadUsers();
+  const userIndex = users.findIndex(user => String(user.id) === String(userId));
+  if (userIndex < 0) return false;
+
+  users[userIndex].team = (users[userIndex].team || []).filter(m => String(m.id) !== String(memberId));
+  await saveUsers(users);
+  return true;
+}
+
 async function getMemoryVault(userId) {
   const user = await getUserById(userId);
   return Array.isArray(user?.memory) ? user.memory : [];
@@ -333,6 +423,11 @@ module.exports = {
   updateUserPassword,
   getTasks,
   saveTask,
+  toggleTask,
+  deleteTask,
+  getTeam,
+  inviteTeamMember,
+  removeTeamMember,
   getMemoryVault,
   getKnowledgeContext,
   saveDocument,

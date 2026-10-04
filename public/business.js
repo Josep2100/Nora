@@ -213,7 +213,7 @@
 (() => {
   'use strict';
 
-  const state = { tasks: [], documents: [] };
+  const state = { tasks: [], documents: [], team: [] };
   const viewTitles = {
     overview: ['ESPACIO EMPRESARIAL', 'Resumen'],
     knowledge: ['BASE DE CONOCIMIENTO', 'Conocimiento'],
@@ -264,34 +264,136 @@
     if (Number.isNaN(date.getTime())) return '';
     return new Intl.DateTimeFormat('es-ES', {
       day: '2-digit',
-      month: 'short'
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
     }).format(date);
   }
 
-  function createTaskItem(task) {
-    const item = document.createElement('div');
-    item.className = 'task-item';
+  function formatGoogleCalDates(dueDate) {
+    if (!dueDate) return '';
+    const start = new Date(dueDate);
+    if (isNaN(start.getTime())) return '';
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    const fmt = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    return `${fmt(start)}/${fmt(end)}`;
+  }
 
-    const marker = document.createElement('span');
+  async function handleToggleTask(taskId) {
+    try {
+      const res = await requestJson(`/api/business/tasks/${taskId}/toggle`, { method: 'POST' });
+      const taskIndex = state.tasks.findIndex(t => String(t.id) === String(taskId));
+      if (taskIndex >= 0) {
+        state.tasks[taskIndex].completed = Boolean(res.task?.completed);
+      }
+      renderTasks();
+      showToast(res.message || (res.task?.completed ? '✓ Tarea completada' : 'Tarea pendiente'), 'success');
+    } catch (error) {
+      showToast(error.message || 'No se pudo actualizar el estado de la tarea.', 'error');
+    }
+  }
+
+  async function handleDeleteTask(taskId) {
+    if (!confirm('¿Desea eliminar esta tarea?')) return;
+    try {
+      await requestJson(`/api/business/tasks/${taskId}`, { method: 'DELETE' });
+      state.tasks = state.tasks.filter(t => String(t.id) !== String(taskId));
+      renderTasks();
+      showToast('Tarea eliminada correctamente.', 'success');
+    } catch (error) {
+      showToast(error.message || 'No se pudo eliminar la tarea.', 'error');
+    }
+  }
+
+  function createTaskItem(task, isFullView = false) {
+    const item = document.createElement('div');
+    item.className = `task-item${task.completed ? ' completed' : ''}`;
+
+    const marker = document.createElement('button');
+    marker.type = 'button';
     marker.className = `task-check${task.completed ? ' done' : ''}`;
+    marker.title = task.completed ? 'Marcar como pendiente' : 'Marcar como completada';
+    marker.setAttribute('aria-label', task.completed ? 'Completada' : 'Pendiente');
     marker.textContent = task.completed ? '✓' : '';
-    marker.setAttribute('aria-hidden', 'true');
+    marker.addEventListener('click', (e) => {
+      e.stopPropagation();
+      void handleToggleTask(task.id);
+    });
 
     const info = document.createElement('div');
     info.className = 'task-info';
 
     const title = document.createElement('strong');
     title.textContent = task.title || 'Tarea';
+    if (task.completed) {
+      title.style.textDecoration = 'line-through';
+      title.style.opacity = '0.6';
+    }
     info.append(title);
 
     const metadata = document.createElement('small');
     const details = [priorityLabels[task.priority] || 'Media'];
     const dueDate = formatDate(task.dueDate);
-    if (dueDate) details.push(`Vence ${dueDate}`);
+    if (dueDate) {
+      details.push(`📅 ${dueDate} (Recordatorio 24h antes)`);
+    }
     metadata.textContent = details.join(' · ');
     info.append(metadata);
 
-    item.append(marker, info);
+    const actions = document.createElement('div');
+    actions.className = 'task-actions';
+    actions.style.display = 'flex';
+    actions.style.alignItems = 'center';
+    actions.style.gap = '6px';
+    actions.style.marginLeft = 'auto';
+
+    if (task.dueDate && isFullView) {
+      const gcalLink = document.createElement('a');
+      gcalLink.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(task.title)}&dates=${formatGoogleCalDates(task.dueDate)}&details=${encodeURIComponent(task.description || 'Tarea asignada en Nora Business')}`;
+      gcalLink.target = '_blank';
+      gcalLink.rel = 'noopener';
+      gcalLink.className = 'cal-link';
+      gcalLink.title = 'Añadir a Google Calendar';
+      gcalLink.textContent = '📅 GCal';
+      gcalLink.style.fontSize = '11px';
+      gcalLink.style.padding = '3px 7px';
+      gcalLink.style.borderRadius = '6px';
+      gcalLink.style.background = '#1b2333';
+      gcalLink.style.color = '#78aaff';
+      gcalLink.style.textDecoration = 'none';
+
+      const icsLink = document.createElement('a');
+      icsLink.href = `/api/business/calendar/task/${task.id}.ics`;
+      icsLink.download = `tarea-${task.id}.ics`;
+      icsLink.className = 'cal-link';
+      icsLink.title = 'Descargar evento .ics con alarma 1 día antes para Apple / Outlook / Móvil';
+      icsLink.textContent = '📱 .ics';
+      icsLink.style.fontSize = '11px';
+      icsLink.style.padding = '3px 7px';
+      icsLink.style.borderRadius = '6px';
+      icsLink.style.background = '#1b2333';
+      icsLink.style.color = '#5ee0b0';
+      icsLink.style.textDecoration = 'none';
+
+      actions.append(gcalLink, icsLink);
+    }
+
+    if (isFullView) {
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'delete-btn';
+      deleteBtn.title = 'Eliminar tarea';
+      deleteBtn.textContent = '🗑️';
+      deleteBtn.style.fontSize = '12px';
+      deleteBtn.style.padding = '3px 6px';
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        void handleDeleteTask(task.id);
+      });
+      actions.append(deleteBtn);
+    }
+
+    item.append(marker, info, actions);
     return item;
   }
 
@@ -302,18 +404,18 @@
 
     const recentContainer = document.getElementById('dashboardTasks');
     const fullContainer = document.getElementById('fullTaskList');
-    const recent = [...state.tasks].reverse().slice(0, 4);
+    const recent = [...state.tasks].reverse().slice(0, 5);
 
     if (recentContainer) {
       recentContainer.replaceChildren();
-      if (recent.length) recent.forEach(task => recentContainer.append(createTaskItem(task)));
+      if (recent.length) recent.forEach(task => recentContainer.append(createTaskItem(task, false)));
       else addEmptyState(recentContainer, 'No hay tareas pendientes. Añada la primera acción del equipo.');
     }
 
     if (fullContainer) {
       fullContainer.replaceChildren();
       if (state.tasks.length) {
-        [...state.tasks].reverse().forEach(task => fullContainer.append(createTaskItem(task)));
+        [...state.tasks].reverse().forEach(task => fullContainer.append(createTaskItem(task, true)));
       } else {
         addEmptyState(fullContainer, 'Todavía no hay tareas en este espacio.');
       }
@@ -378,16 +480,156 @@
     }
   }
 
+  async function handleRemoveMember(memberId) {
+    if (!confirm('¿Desea revocar el acceso de este miembro?')) return;
+    try {
+      await requestJson(`/api/business/team/${memberId}`, { method: 'DELETE' });
+      state.team = state.team.filter(m => String(m.id) !== String(memberId));
+      renderTeam();
+      showToast('Acceso revocado correctamente.', 'success');
+    } catch (error) {
+      showToast(error.message || 'No se pudo revocar el acceso.', 'error');
+    }
+  }
+
+  function createTeamCard(member) {
+    const card = document.createElement('div');
+    card.className = 'team-card';
+    card.style.display = 'flex';
+    card.style.alignItems = 'center';
+    card.style.gap = '14px';
+    card.style.padding = '14px';
+    card.style.background = '#101522';
+    card.style.border = '1px solid var(--line)';
+    card.style.borderRadius = '14px';
+    card.style.marginBottom = '9px';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.textContent = (member.name || member.email || 'M').charAt(0).toUpperCase();
+
+    const info = document.createElement('div');
+    info.style.flex = '1';
+
+    const nameRow = document.createElement('strong');
+    nameRow.textContent = member.name || member.email;
+    nameRow.style.display = 'flex';
+    nameRow.style.alignItems = 'center';
+    nameRow.style.gap = '8px';
+
+    if (member.isOwner) {
+      const ownerBadge = document.createElement('span');
+      ownerBadge.textContent = '👑 Propietario';
+      ownerBadge.style.fontSize = '10px';
+      ownerBadge.style.color = '#f59e0b';
+      ownerBadge.style.background = '#3a2d12';
+      ownerBadge.style.padding = '2px 6px';
+      ownerBadge.style.borderRadius = '4px';
+      nameRow.append(ownerBadge);
+    }
+    info.append(nameRow);
+
+    const emailRow = document.createElement('span');
+    emailRow.textContent = member.email;
+    emailRow.style.color = '#7f8ba0';
+    emailRow.style.fontSize = '12px';
+    emailRow.style.display = 'block';
+    emailRow.style.marginTop = '2px';
+    info.append(emailRow);
+
+    const permDesc = {
+      all: 'Permisos: Control total',
+      editor: 'Permisos: Crear y editar tareas y conocimiento',
+      read: 'Permisos: Solo lectura y consultas'
+    };
+    const permRow = document.createElement('small');
+    permRow.textContent = permDesc[member.permissions] || `Permisos: ${member.role}`;
+    permRow.style.color = '#9ca8bf';
+    permRow.style.fontSize = '11px';
+    permRow.style.display = 'block';
+    permRow.style.marginTop = '3px';
+    info.append(permRow);
+
+    const rightCol = document.createElement('div');
+    rightCol.style.display = 'flex';
+    rightCol.style.alignItems = 'center';
+    rightCol.style.gap = '8px';
+
+    const roleBadge = document.createElement('span');
+    roleBadge.className = 'role';
+    roleBadge.textContent = member.role || 'Miembro';
+    rightCol.append(roleBadge);
+
+    if (!member.isOwner) {
+      const revokeBtn = document.createElement('button');
+      revokeBtn.type = 'button';
+      revokeBtn.className = 'delete-btn';
+      revokeBtn.title = 'Revocar acceso';
+      revokeBtn.textContent = '🗑️';
+      revokeBtn.style.padding = '4px 8px';
+      revokeBtn.addEventListener('click', () => {
+        void handleRemoveMember(member.id);
+      });
+      rightCol.append(revokeBtn);
+    }
+
+    card.append(avatar, info, rightCol);
+    return card;
+  }
+
+  function renderTeam() {
+    const stat = document.getElementById('statMembers');
+    if (stat) stat.textContent = String(state.team.length || 1);
+
+    const container = document.getElementById('teamList');
+    if (container) {
+      container.replaceChildren();
+      if (state.team.length) {
+        state.team.forEach(member => container.append(createTeamCard(member)));
+      } else {
+        addEmptyState(container, 'No hay miembros adicionales invitados aún.');
+      }
+    }
+  }
+
+  function checkUpcomingReminders() {
+    const now = Date.now();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const upcoming = state.tasks.filter(t => {
+      if (t.completed || !t.dueDate) return false;
+      const due = new Date(t.dueDate).getTime();
+      return due > now && due <= (now + oneDayMs);
+    });
+
+    if (upcoming.length > 0 && typeof Notification !== 'undefined') {
+      if (Notification.permission === 'granted') {
+        upcoming.forEach(task => {
+          const dueFmt = formatDate(task.dueDate);
+          try {
+            new Notification('Recordatorio Nora Business (Entrega próxima)', {
+              body: `La tarea "${task.title}" vence en menos de 24 horas (${dueFmt}).`,
+              icon: '/icon-192.png'
+            });
+          } catch (_) {}
+        });
+      }
+    }
+  }
+
   async function refreshWorkspace() {
     try {
-      const [taskData, documentData] = await Promise.all([
+      const [taskData, documentData, teamData] = await Promise.all([
         requestJson('/api/business/tasks'),
-        requestJson('/api/business/knowledge/documents')
+        requestJson('/api/business/knowledge/documents'),
+        requestJson('/api/business/team').catch(() => ({ team: [] }))
       ]);
       state.tasks = Array.isArray(taskData.tasks) ? taskData.tasks : [];
       state.documents = Array.isArray(documentData.documents) ? documentData.documents : [];
+      state.team = Array.isArray(teamData.team) ? teamData.team : [];
       renderTasks();
       renderDocuments();
+      renderTeam();
+      checkUpcomingReminders();
     } catch (error) {
       showToast(error.message || 'No se pudo actualizar el espacio.', 'error');
     }
@@ -455,6 +697,11 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    // Pedir permiso para notificaciones de recordatorio si está soportado
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
+
     document.querySelectorAll('[data-view]').forEach(button => {
       button.addEventListener('click', () => {
         setView(button.dataset.view);
@@ -480,6 +727,7 @@
     document.getElementById('addTaskBtn')?.addEventListener('click', () => openModal('taskModal'));
     document.getElementById('quickKnowledgeBtn')?.addEventListener('click', () => openModal('documentModal'));
     document.getElementById('addKnowledgeBtn')?.addEventListener('click', () => openModal('documentModal'));
+    document.getElementById('inviteBtn')?.addEventListener('click', () => openModal('inviteModal'));
 
     document.querySelectorAll('.close-modal').forEach(button => {
       button.addEventListener('click', () => closeModal(button.closest('.modal')));
@@ -517,6 +765,39 @@
         showToast(error.message || 'No se pudo guardar la tarea.', 'error');
       } finally {
         setFormLoading(taskForm, false, 'Guardando...');
+      }
+    });
+
+    const inviteForm = document.getElementById('inviteForm');
+    inviteForm?.addEventListener('submit', async event => {
+      event.preventDefault();
+      const name = document.getElementById('inviteName')?.value.trim() || '';
+      const email = document.getElementById('inviteEmail')?.value.trim() || '';
+      const roleSelect = document.getElementById('inviteRole');
+      const role = roleSelect?.value || 'Miembro';
+      const selectedOption = roleSelect?.options[roleSelect.selectedIndex];
+      const permissions = selectedOption?.dataset.perm || 'editor';
+
+      if (!email) {
+        showToast('Indique el correo electrónico del colaborador.', 'error');
+        return;
+      }
+
+      setFormLoading(inviteForm, true, 'Enviando invitación...');
+      try {
+        const result = await requestJson('/api/business/team/invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, role, permissions })
+        });
+        inviteForm.reset();
+        closeModal(document.getElementById('inviteModal'));
+        await refreshWorkspace();
+        showToast(result.message || 'Invitación registrada con éxito.', 'success');
+      } catch (error) {
+        showToast(error.message || 'No se pudo registrar la invitación.', 'error');
+      } finally {
+        setFormLoading(inviteForm, false, 'Enviar invitación');
       }
     });
 

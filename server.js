@@ -421,6 +421,178 @@ app.post('/api/business/tasks', ensureAuthenticated, async (req, res) => {
   }
 });
 
+// Marcar tarea como completada / pendiente (Tic de tarea)
+app.all(['/api/business/tasks/:id/toggle', '/api/tasks/:id/toggle'], ensureAuthenticated, async (req, res) => {
+  try {
+    const taskId = req.params.id;
+    const updated = await storage.toggleTask(req.user.id, taskId);
+    if (!updated) {
+      return res.status(404).json({ error: 'Tarea no encontrada' });
+    }
+    return res.json({
+      message: updated.completed ? 'Tarea completada' : 'Tarea reabierta',
+      task: updated
+    });
+  } catch (error) {
+    console.error('Error al cambiar estado de tarea:', error);
+    return res.status(500).json({ error: 'Error al actualizar el estado de la tarea' });
+  }
+});
+
+app.delete('/api/business/tasks/:id', ensureAuthenticated, async (req, res) => {
+  try {
+    const taskId = req.params.id;
+    await storage.deleteTask(req.user.id, taskId);
+    return res.json({ message: 'Tarea eliminada correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar tarea:', error);
+    return res.status(500).json({ error: 'Error al eliminar la tarea' });
+  }
+});
+
+// ==========================================
+// RUTAS DE EQUIPO E INVITACIONES CON PERMISOS
+// ==========================================
+app.get('/api/business/team', ensureAuthenticated, async (req, res) => {
+  try {
+    const team = await storage.getTeam(req.user.id);
+    return res.json({ team });
+  } catch (error) {
+    console.error('Error al obtener equipo:', error);
+    return res.status(500).json({ error: 'Error al obtener los miembros del equipo' });
+  }
+});
+
+app.post('/api/business/team/invite', ensureAuthenticated, async (req, res) => {
+  try {
+    const { name, email, role, permissions } = req.body || {};
+    if (!email || !String(email).trim() || !String(email).includes('@')) {
+      return res.status(400).json({ error: 'Debe indicar un correo electrónico válido (corporativo o personal).' });
+    }
+
+    const member = await storage.inviteTeamMember(req.user.id, {
+      name: String(name || '').trim(),
+      email: String(email).trim(),
+      role: role || 'Miembro',
+      permissions: permissions || 'editor'
+    });
+
+    return res.status(201).json({
+      message: `Invitación registrada para ${member.email}. Se han configurado los permisos seleccionados.`,
+      member
+    });
+  } catch (error) {
+    console.error('Error al invitar miembro:', error);
+    return res.status(500).json({ error: 'Error al registrar la invitación del miembro' });
+  }
+});
+
+app.delete('/api/business/team/:id', ensureAuthenticated, async (req, res) => {
+  try {
+    const memberId = req.params.id;
+    await storage.removeTeamMember(req.user.id, memberId);
+    return res.json({ message: 'Acceso de miembro revocado correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar miembro:', error);
+    return res.status(500).json({ error: 'Error al revocar el acceso del miembro' });
+  }
+});
+
+// ==========================================
+// SINCRONIZACIÓN DE CALENDARIO (MÓVIL & PC) CON RECORDATORIO 1 DÍA ANTES
+// ==========================================
+function formatIcsDate(dateObj) {
+  const d = new Date(dateObj);
+  return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+}
+
+function generateTasksIcs(tasks, companyName = 'Nora Business') {
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Nora Business//ES',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    `X-WR-CALNAME:Nora Business - ${companyName}`,
+    'X-WR-TIMEZONE:UTC'
+  ];
+
+  for (const task of tasks) {
+    if (!task.dueDate) continue;
+    const startDate = new Date(task.dueDate);
+    if (isNaN(startDate.getTime())) continue;
+
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+    const uid = `task-${task.id || Math.random().toString(36).slice(2)}@nora.business`;
+    const dtStamp = formatIcsDate(new Date());
+    const dtStart = formatIcsDate(startDate);
+    const dtEnd = formatIcsDate(endDate);
+    const summary = String(task.title || 'Tarea').replace(/[\r\n]+/g, ' ');
+    const desc = String(task.description || `Tarea de ${companyName}`).replace(/[\r\n]+/g, '\\n');
+    const status = task.completed ? 'COMPLETED' : 'CONFIRMED';
+
+    lines.push(
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${dtStamp}`,
+      `DTSTART:${dtStart}`,
+      `DTEND:${dtEnd}`,
+      `SUMMARY:${summary}`,
+      `DESCRIPTION:${desc}`,
+      `STATUS:${status}`,
+      // Recordatorio 1 día antes (24 horas)
+      'BEGIN:VALARM',
+      'TRIGGER:-P1D',
+      'ACTION:DISPLAY',
+      `DESCRIPTION:Recordatorio (1 día antes): ${summary}`,
+      'END:VALARM',
+      // Recordatorio adicional 2 horas antes
+      'BEGIN:VALARM',
+      'TRIGGER:-PT2H',
+      'ACTION:DISPLAY',
+      `DESCRIPTION:Recordatorio (2 horas antes): ${summary}`,
+      'END:VALARM',
+      'END:VEVENT'
+    );
+  }
+
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+
+app.get('/api/business/calendar/tasks.ics', ensureAuthenticated, async (req, res) => {
+  try {
+    const tasks = await storage.getTasks(req.user.id);
+    const companyName = req.user.companyName || req.user.company_name || 'Mi Empresa';
+    const icsContent = generateTasksIcs(tasks, companyName);
+
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="nora-tareas-${encodeURIComponent(companyName)}.ics"`);
+    return res.send(icsContent);
+  } catch (error) {
+    console.error('Error generando calendario ICS:', error);
+    return res.status(500).json({ error: 'Error al generar el calendario' });
+  }
+});
+
+app.get('/api/business/calendar/task/:id.ics', ensureAuthenticated, async (req, res) => {
+  try {
+    const tasks = await storage.getTasks(req.user.id);
+    const task = tasks.find(t => String(t.id) === String(req.params.id));
+    if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+
+    const companyName = req.user.companyName || req.user.company_name || 'Mi Empresa';
+    const icsContent = generateTasksIcs([task], companyName);
+
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="tarea-${task.id}.ics"`);
+    return res.send(icsContent);
+  } catch (error) {
+    console.error('Error generando archivo ICS de tarea:', error);
+    return res.status(500).json({ error: 'Error al generar el archivo de calendario' });
+  }
+});
+
 // Endpoint de Base de Conocimiento (Knowledge)
 app.get('/api/business/knowledge', ensureAuthenticated, async (req, res) => {
   try {

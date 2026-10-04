@@ -731,17 +731,31 @@
               </h1>
 
               <p>
-                Organice acciones internas y mantenga el trabajo visible.
+                Organice acciones internas y sincronícelas con su calendario de móvil y PC.
               </p>
 
             </div>
 
-            <button
-              id="addTaskBtn"
-              class="primary-btn compact"
-            >
-              ＋ Nueva tarea
-            </button>
+            <div class="header-actions-group">
+
+              <a
+                id="syncCalendarBtn"
+                class="secondary-btn compact"
+                href="/api/business/calendar/tasks.ics"
+                download="nora-tareas.ics"
+                title="Descargar archivo de calendario con recordatorio 1 día antes para Google Calendar, Apple Calendar y Outlook"
+              >
+                📅 Sincronizar Calendario (.ics)
+              </a>
+
+              <button
+                id="addTaskBtn"
+                class="primary-btn compact"
+              >
+                ＋ Nueva tarea
+              </button>
+
+            </div>
 
           </div>
 
@@ -762,7 +776,7 @@
             <div>
 
               <span class="eyebrow">
-                EQUIPO
+                EQUIPO Y ACCESOS
               </span>
 
               <h1>
@@ -770,15 +784,14 @@
               </h1>
 
               <p>
-                Gestione quién tiene acceso al entorno empresarial.
+                Invite colaboradores mediante correo corporativo o personal y asigne sus permisos.
               </p>
 
             </div>
 
             <button
               id="inviteBtn"
-              class="secondary-btn compact"
-              disabled
+              class="primary-btn compact"
             >
               ＋ Invitar miembro
             </button>
@@ -787,18 +800,16 @@
 
           <div class="notice">
 
-            <span>🚧</span>
+            <span>👥</span>
 
             <div>
 
               <strong>
-                Invitaciones multiusuario en preparación
+                Gestión de equipo con control de permisos
               </strong>
 
               <p>
-                Esta versión piloto mantiene el espacio aislado por cuenta.
-                La gestión de invitaciones y permisos por empleado será
-                la siguiente fase.
+                Como propietario, puede invitar miembros asignándoles roles de Administrador, Gestor o Miembro para controlar su nivel de acceso.
               </p>
 
             </div>
@@ -1064,6 +1075,105 @@
             type="submit"
           >
             Crear tarea
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+  <!-- =========================================================
+       MODAL: INVITAR MIEMBRO DE EQUIPO
+       ========================================================= -->
+
+  <div
+    id="inviteModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-card">
+
+      <div class="modal-head">
+
+        <div>
+
+          <span class="eyebrow">
+            EQUIPO DE LA EMPRESA
+          </span>
+
+          <h3>
+            Invitar miembro
+          </h3>
+
+        </div>
+
+        <button
+          class="icon-btn close-modal"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <p class="modal-desc">
+        Envíe una invitación por correo personal o corporativo y elija el nivel de permisos que tendrá en este espacio.
+      </p>
+
+      <form id="inviteForm">
+
+        <label>
+          Nombre del colaborador
+          <input
+            id="inviteName"
+            required
+            maxlength="100"
+            placeholder="Ej. María García"
+          />
+        </label>
+
+        <label>
+          Correo electrónico (corporativo o personal)
+          <input
+            id="inviteEmail"
+            type="email"
+            required
+            maxlength="120"
+            placeholder="maria@empresa.com o maria.garcia@gmail.com"
+          />
+        </label>
+
+        <label>
+          Rol y nivel de permisos
+          <select id="inviteRole">
+            <option value="Administrador" data-perm="all">
+              👑 Administrador — Control total (tareas, documentos, equipo y ajustes)
+            </option>
+            <option value="Gestor" selected data-perm="editor">
+              ✏️ Gestor / Editor — Crear y gestionar tareas y base de conocimiento
+            </option>
+            <option value="Miembro" data-perm="read">
+              👁️ Miembro / Lector — Consultar a Nora y ver tareas del espacio
+            </option>
+          </select>
+        </label>
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="secondary-btn close-modal"
+          >
+            Cancelar
+          </button>
+
+          <button
+            class="primary-btn"
+            type="submit"
+          >
+            Enviar invitación
           </button>
 
         </div>
