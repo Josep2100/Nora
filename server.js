@@ -362,7 +362,7 @@ app.post('/api/auth/login', (req, res, next) => {
           email: user.email,
           name: user.name || user.email,
           companyName: user.companyName || user.company_name || 'Mi empresa',
-          onboardingCompleted: user.onboardingCompleted === true
+          onboardingCompleted: user.onboardingCompleted !== false
         }
       });
     });
@@ -420,7 +420,7 @@ app.post('/api/auth/signup', async (req, res, next) => {
           email: user.email,
           name: user.name || user.email,
           companyName: user.companyName || user.company_name || normalizedCompanyName,
-          onboardingCompleted: user.onboardingCompleted === true
+          onboardingCompleted: user.onboardingCompleted !== false
         }
       });
     });
@@ -482,7 +482,7 @@ app.get('/api/auth/me', (req, res) => {
         email: req.user.email,
         name: req.user.name || req.user.email,
         companyName: req.user.companyName || req.user.company_name || 'Mi empresa',
-        onboardingCompleted: req.user.onboardingCompleted === true
+        onboardingCompleted: req.user.onboardingCompleted !== false
       }
     });
   }
