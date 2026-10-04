@@ -14,6 +14,9 @@ const gemini = require('./gemini');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Confianza en el proxy inverso de Render para cookies HTTPS seguras
+app.set('trust proxy', 1);
+
 // ==========================================
 // 1. CONFIGURACIÓN DE MIDDLEWARES BASE
 // ==========================================
@@ -22,18 +25,31 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+app.use((req, res, next) => {
+  const url = req.path || '';
+  if (url.endsWith('.html') || url.endsWith('.js') || url.endsWith('.css') || url.endsWith('.json') || url.endsWith('.svg') || url.endsWith('.png') || url.endsWith('.webmanifest')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
 // Servir archivos estáticos del frontend
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Configuración de Sesiones
 const sessionSecret = process.env.SESSION_SECRET || 'nora-secret-key-change-in-prod';
+const sessionStore = storage.getSessionStore();
 app.use(
   session({
+    store: sessionStore,
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       maxAge: 24 * 60 * 60 * 1000 // 24 horas
     }
   })
@@ -51,19 +67,61 @@ passport.use(
       try {
         const user = await storage.getUserByEmail(email);
         if (!user) {
-          return done(null, false, { message: 'Usuario no encontrado' });
+          return done(null, false, { message: 'No existe una cuenta con este correo electrónico.' });
         }
-        const isMatch = await bcrypt.compare(password, user.password_hash || user.password);
+        const hash = user.password_hash || user.passwordHash || user.password;
+        if (!hash) {
+          return done(null, false, { 
+            message: 'Esta cuenta se creó con Google o no tiene contraseña. Por favor regístrese con este correo y una contraseña para activarla.' 
+          });
+        }
+        const isMatch = await bcrypt.compare(password, hash);
         if (!isMatch) {
-          return done(null, false, { message: 'Contraseña incorrecta' });
+          return done(null, false, { message: 'Contraseña incorrecta.' });
         }
         return done(null, user);
       } catch (err) {
+        console.error('Error en LocalStrategy:', err);
         return done(err);
       }
     }
   )
 );
+
+// Configuración opcional de Google OAuth
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+if (googleClientId && googleClientSecret) {
+  const GoogleStrategy = require('passport-google-oauth20').Strategy;
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: googleClientId,
+        clientSecret: googleClientSecret,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || '/auth/google/callback',
+        proxy: true
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        try {
+          const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
+          if (!email) return done(new Error('No se pudo obtener el correo de Google'));
+          
+          let user = await storage.getUserByEmail(email);
+          if (!user) {
+            user = await storage.createUser({
+              name: profile.displayName || email.split('@')[0],
+              companyName: 'Mi Empresa',
+              email: email
+            });
+          }
+          return done(null, user);
+        } catch (err) {
+          return done(err);
+        }
+      }
+    )
+  );
+}
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -151,15 +209,18 @@ app.post('/api/auth/signup', async (req, res, next) => {
 
     const normalizedEmail = String(email).trim().toLowerCase();
     const existingUser = await storage.getUserByEmail(normalizedEmail);
-    if (existingUser) {
-      return res.status(409).json({ error: 'Ya existe una cuenta con ese correo electrónico.' });
+    const hasPassword = existingUser && (existingUser.password_hash || existingUser.passwordHash || existingUser.password);
+    
+    if (existingUser && hasPassword) {
+      return res.status(409).json({ error: 'Ya existe una cuenta con ese correo electrónico. Inicie sesión con su contraseña.' });
     }
 
+    const passwordHash = await bcrypt.hash(password, 10);
     const user = await storage.createUser({
       name: String(name).trim(),
       companyName: normalizedCompanyName,
       email: normalizedEmail,
-      passwordHash: await bcrypt.hash(password, 10)
+      passwordHash: passwordHash
     });
 
     req.logIn(user, (loginErr) => {
@@ -180,12 +241,29 @@ app.post('/api/auth/signup', async (req, res, next) => {
   }
 });
 
-// Ruta para inicio de sesión con Google
-app.get('/api/auth/google', (req, res) => {
-  res.status(501).json({ 
-    error: 'La autenticación con Google no está configurada actualmente. Por favor inicie sesión con correo y contraseña.' 
+// Rutas para inicio de sesión con Google
+if (googleClientId && googleClientSecret) {
+  app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+  app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+  app.get('/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/?auth=google-error' }),
+    (req, res) => {
+      res.redirect('/');
+    }
+  );
+  app.get('/api/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/?auth=google-error' }),
+    (req, res) => {
+      res.redirect('/');
+    }
+  );
+} else {
+  app.get(['/api/auth/google', '/auth/google'], (req, res) => {
+    res.status(501).json({ 
+      error: 'La autenticación directa con Google no está configurada. Por favor inicie sesión con correo y contraseña.' 
+    });
   });
-});
+}
 
 app.post('/api/auth/logout', (req, res, next) => {
   req.logout((err) => {

@@ -1156,11 +1156,19 @@
        SCRIPTS
        ========================================================= -->
 
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js?v=' + Date.now()).catch(console.warn);
+      });
+    }
+  </script>
+
   <!-- Lógica de autenticación y flujo de Nora Business -->
-  <script src="/app.js"></script>
+  <script src="/app.js?v=20261004"></script>
 
   <!-- Lógica principal de Nora Business -->
-  <script src="/business.js"></script>
+  <script src="/business.js?v=20261004"></script>
 
 </body>
 </html>

@@ -162,12 +162,36 @@ async function getUserById(id) {
   }
 }
 
+async function updateUserPassword(email, passwordHash) {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  const users = loadUsers();
+  const index = users.findIndex(user => String(user.email || '').trim().toLowerCase() === normalizedEmail);
+  if (index < 0) return null;
+  users[index].password_hash = passwordHash;
+  await saveUsers(users);
+  return users[index];
+}
+
 async function createUser({ name, companyName, email, passwordHash, password }) {
   const normalizedEmail = String(email || '').trim().toLowerCase();
-  const existingUser = await getUserByEmail(normalizedEmail);
-  if (existingUser) return existingUser;
-
+  const users = loadUsers();
+  const existingIndex = users.findIndex(user => String(user.email || '').trim().toLowerCase() === normalizedEmail);
   const normalizedCompanyName = String(companyName || '').trim() || 'Mi Empresa';
+
+  if (existingIndex >= 0) {
+    const existingUser = users[existingIndex];
+    if (passwordHash || password) {
+      existingUser.password_hash = passwordHash || password;
+    }
+    if (name) existingUser.name = String(name).trim();
+    if (companyName) {
+      existingUser.companyName = normalizedCompanyName;
+      existingUser.company_name = normalizedCompanyName;
+    }
+    users[existingIndex] = existingUser;
+    await saveUsers(users);
+    return existingUser;
+  }
 
   const user = {
     id: crypto.randomUUID(),
@@ -184,7 +208,6 @@ async function createUser({ name, companyName, email, passwordHash, password }) 
     activity: []
   };
 
-  const users = loadUsers();
   users.push(user);
   await saveUsers(users);
   return user;
@@ -307,6 +330,7 @@ module.exports = {
   getUserByEmail,
   getUserById,
   createUser,
+  updateUserPassword,
   getTasks,
   saveTask,
   getMemoryVault,
