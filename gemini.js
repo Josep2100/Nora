@@ -482,7 +482,36 @@ function localSmartFallback(userMessage, knowledgeContext = '', taskList = [], c
     };
   }
 
-  // 3. Consulta de base de conocimiento (búsqueda local contextual por relevancia)
+  // 3. Consulta general de conocimiento o qué sabe Nora de la empresa
+  if (/(qu[eé]\s+sabes|documentos|informaci[oó]n|base de conocimiento|conocimiento|procedimiento|manual|servicios|tarifas|qu[eé]\s+tienes|datos\s+de\s+la\s+empresa)/i.test(normalized)) {
+    if (knowledgeContext && knowledgeContext.trim()) {
+      const chunks = knowledgeContext.split(/\n\n(?=DOCUMENTO \d+:)/).filter(Boolean);
+      const docsSummary = chunks.map((chunk, idx) => {
+        const titleMatch = chunk.match(/^DOCUMENTO \d+:\s*(.+)$/m);
+        const title = titleMatch ? titleMatch[1].trim() : `Documento ${idx + 1}`;
+        const clean = chunk.replace(/^DOCUMENTO \d+:.*\n/, '').trim();
+        const snippet = clean.length > 250 ? clean.slice(0, 250) + '...' : clean;
+        return `📄 **${title}**:\n${snippet}`;
+      }).join('\n\n');
+
+      const titles = chunks.map((chunk, idx) => {
+        const titleMatch = chunk.match(/^DOCUMENTO \d+:\s*(.+)$/m);
+        return titleMatch ? titleMatch[1].trim() : `Documento ${idx + 1}`;
+      });
+
+      return {
+        response: `Tengo sincronizada la siguiente información y procedimientos sobre **${companyName}**:\n\n${docsSummary}\n\nPuede consultarme cualquier dato, procedimiento o pedirme que agende tareas relacionadas.`,
+        sources: titles
+      };
+    } else {
+      return {
+        response: `Actualmente tengo configurado el espacio empresarial para **${companyName}**. Todavía no se ha incorporado ningún documento o manual en la sección de **Conocimiento**. En cuanto suba un PDF o texto en el apartado "Conocimiento", podré responder todas las consultas sobre las normas, productos y procedimientos de su empresa.`,
+        sources: []
+      };
+    }
+  }
+
+  // 4. Búsqueda contextual por palabras clave en los documentos
   if (knowledgeContext && knowledgeContext.trim()) {
     const words = normalized.split(/\s+/).filter(w => w.length > 3);
     const chunks = knowledgeContext.split(/\n\n(?=DOCUMENTO \d+:)/).filter(Boolean);
@@ -506,25 +535,38 @@ function localSmartFallback(userMessage, knowledgeContext = '', taskList = [], c
 
     if (bestChunk && bestScore > 0) {
       const cleanContent = bestChunk.replace(/^DOCUMENTO \d+:.*\n/, '').trim();
-      const snippet = cleanContent.length > 300 ? cleanContent.slice(0, 300) + '...' : cleanContent;
+      const snippet = cleanContent.length > 350 ? cleanContent.slice(0, 350) + '...' : cleanContent;
       return {
-        response: `Según la documentación de ${companyName} (${bestTitle}):\n\n${snippet}\n\nFuentes: ${bestTitle}`,
+        response: `Según la documentación de **${companyName}** (*${bestTitle}*):\n\n${snippet}`,
         sources: [bestTitle]
       };
     }
   }
 
-  // 4. Saludo o estado
+  // 5. Saludo o estado
   if (/hola|buenos d[ií]as|buenas tardes|qu[eé] tal|saludos|qui[eé]n eres|c[oó]mo est[aá]s/i.test(normalized)) {
     return {
-      response: `Saludos, ${userName}. Soy Nora, asistente inteligente para ${companyName}. Su espacio empresarial se encuentra activo y 100% operativo las 24 horas. ¿En qué puedo asistirle hoy?`,
+      response: `Saludos, ${userName}. Soy Nora, asistente inteligente para **${companyName}**. Su espacio empresarial se encuentra activo y 100% operativo. ¿En qué puedo asistirle hoy?`,
       sources: []
     };
   }
 
-  // 5. Respuesta ejecutiva corporativa
+  // 6. Respuesta ejecutiva corporativa
+  if (knowledgeContext && knowledgeContext.trim()) {
+    const chunks = knowledgeContext.split(/\n\n(?=DOCUMENTO \d+:)/).filter(Boolean);
+    const firstChunk = chunks[0] || '';
+    const titleMatch = firstChunk.match(/^DOCUMENTO \d+:\s*(.+)$/m);
+    const title = titleMatch ? titleMatch[1].trim() : 'Documento';
+    const clean = firstChunk.replace(/^DOCUMENTO \d+:.*\n/, '').trim();
+    const snippet = clean.length > 250 ? clean.slice(0, 250) + '...' : clean;
+    return {
+      response: `He consultado la base de conocimiento de **${companyName}** (${title}):\n\n${snippet}\n\n¿Desea consultar otro procedimiento o agendar una tarea?`,
+      sources: [title]
+    };
+  }
+
   return {
-    response: `He recibido su consulta para ${companyName}. He sincronizado su información empresarial. Puede pedirme programar tareas, agendar citas en su calendario o consultar documentación interna en cualquier momento.`,
+    response: `He recibido su consulta para **${companyName}**. Su espacio empresarial está sincronizado. Puede pedirme programar tareas, agendar citas en su calendario o subir documentación en la sección **Conocimiento**.`,
     sources: []
   };
 }

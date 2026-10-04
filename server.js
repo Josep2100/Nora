@@ -432,38 +432,49 @@ app.get('/api/business/knowledge', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.get('/api/business/knowledge/documents', ensureAuthenticated, (req, res) => {
-  const documents = Array.isArray(req.user.knowledge) ? req.user.knowledge : [];
-  return res.json({
-    documents: documents.map(document => ({
-      id: document.id,
-      title: document.title || 'Documento',
-      preview: String(document.content || '').slice(0, 240),
-      createdAt: document.createdAt || null
-    }))
-  });
+app.get('/api/business/knowledge/documents', ensureAuthenticated, async (req, res) => {
+  try {
+    const user = await storage.getUserById(req.user.id);
+    const documents = Array.isArray(user?.knowledge) ? user.knowledge : [];
+    return res.json({
+      documents: documents.map(document => ({
+        id: document.id,
+        title: document.title || 'Documento',
+        preview: String(document.content || '').slice(0, 240),
+        createdAt: document.createdAt || null
+      }))
+    });
+  } catch (error) {
+    console.error('Error al obtener documentos:', error);
+    return res.status(500).json({ error: 'Error al obtener la lista de documentos' });
+  }
 });
 
-app.post('/api/business/knowledge', ensureAuthenticated, async (req, res) => {
+async function handleKnowledgeUpload(req, res) {
   try {
-    const { pdfBase64, filename, content } = req.body;
+    const { pdfBase64, filename, fileName, title, content, data } = req.body || {};
     let extractedText = content || '';
+    const rawData = pdfBase64 || data;
 
-    if (pdfBase64) {
-      const buffer = Buffer.from(pdfBase64, 'base64');
-      if (buffer.length > 8 * 1024 * 1024) {
-        return res.status(400).json({ error: 'El archivo excede el tamaño máximo permitido (8MB)' });
+    if (rawData) {
+      let base64String = rawData;
+      if (typeof rawData === 'string' && rawData.includes('base64,')) {
+        base64String = rawData.split('base64,')[1];
+      }
+      const buffer = Buffer.from(base64String, 'base64');
+      if (buffer.length > 10 * 1024 * 1024) {
+        return res.status(400).json({ error: 'El archivo excede el tamaño máximo permitido (10MB)' });
       }
       const parsedPdf = await pdfParse(buffer);
-      extractedText = parsedPdf.text || '';
+      extractedText = (parsedPdf.text || '').trim();
     }
 
     if (!extractedText.trim()) {
-      return res.status(400).json({ error: 'No se pudo extraer texto del documento' });
+      return res.status(400).json({ error: 'No se pudo extraer texto del documento o el contenido está vacío.' });
     }
 
-    const docName = filename || `Documento_${Date.now()}.pdf`;
-    await storage.saveDocument(req.user.id, {
+    const docName = String(title || fileName || filename || `Documento_${Date.now()}.pdf`).trim();
+    const savedDoc = await storage.saveDocument(req.user.id, {
       title: docName,
       content: extractedText,
       createdAt: new Date().toISOString()
@@ -471,19 +482,18 @@ app.post('/api/business/knowledge', ensureAuthenticated, async (req, res) => {
 
     return res.json({
       message: `Documento "${docName}" guardado en la base de conocimiento.`,
-      characterCount: extractedText.length
+      characterCount: extractedText.length,
+      document: savedDoc
     });
   } catch (error) {
-    console.error('Error en /api/business/knowledge:', error);
-    return res.status(500).json({ error: 'Error al procesar el documento' });
+    console.error('Error en carga de documento/PDF:', error);
+    return res.status(500).json({ error: 'Error al procesar el documento: ' + error.message });
   }
-});
+}
 
-// Compatibilidad con subida de PDF previa
-app.post('/api/knowledge/upload-pdf', ensureAuthenticated, async (req, res) => {
-  req.url = '/api/business/knowledge';
-  return app._router.handle(req, res);
-});
+app.post('/api/business/knowledge', ensureAuthenticated, handleKnowledgeUpload);
+app.post('/api/business/knowledge/pdf', ensureAuthenticated, handleKnowledgeUpload);
+app.post('/api/knowledge/upload-pdf', ensureAuthenticated, handleKnowledgeUpload);
 
 // ==========================================
 // 5. MANEJO DE ERRORES GLOBAL Y FALLBACK
