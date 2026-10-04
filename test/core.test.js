@@ -111,5 +111,8 @@ test('El sistema genera calendario ICS sincronizable con recordatorio 1 día ant
   assert.match(serverJs, /BEGIN:VCALENDAR/);
   assert.match(serverJs, /TRIGGER:-P1D/);
   assert.match(serverJs, /Recordatorio \(1 día antes\)/);
+  assert.match(serverJs, /calendar\/feed\/:token\.ics/);
+  assert.match(serverJs, /getOrCreateCalendarToken/);
+  assert.match(businessJs, /business\/calendar\/feed/);
 });
 

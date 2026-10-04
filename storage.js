@@ -162,6 +162,30 @@ async function getUserById(id) {
   }
 }
 
+async function getUserByCalendarToken(token) {
+  try {
+    const raw = String(token || '').trim();
+    if (!raw) return null;
+    return loadUsers().find(user =>
+      String(user.calendarToken || user.calendar_token || '') === raw
+    ) || null;
+  } catch (error) {
+    console.error('Error buscando usuario por calendarToken:', error.message);
+    return null;
+  }
+}
+
+async function getOrCreateCalendarToken(userId) {
+  const users = loadUsers();
+  const index = users.findIndex(u => String(u.id) === String(userId));
+  if (index < 0) return null;
+  if (!users[index].calendarToken) {
+    users[index].calendarToken = crypto.randomBytes(16).toString('hex');
+    await saveUsers(users);
+  }
+  return users[index].calendarToken;
+}
+
 async function updateUserPassword(email, passwordHash) {
   const normalizedEmail = String(email || '').trim().toLowerCase();
   const users = loadUsers();
@@ -419,6 +443,8 @@ module.exports = {
   saveUsers,
   getUserByEmail,
   getUserById,
+  getUserByCalendarToken,
+  getOrCreateCalendarToken,
   createUser,
   updateUserPassword,
   getTasks,

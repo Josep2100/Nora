@@ -279,6 +279,23 @@
     return `${fmt(start)}/${fmt(end)}`;
   }
 
+  async function setupCalendarFeed() {
+    const button = document.getElementById('syncCalendarBtn');
+    if (!button) return;
+
+    try {
+      const feed = await requestJson('/api/business/calendar/feed');
+      // webcal:// permite que el sistema operativo abra la aplicación de calendario
+      // elegida. La URL HTTPS queda disponible como respaldo para Outlook/Google.
+      button.href = feed.webcalUrl || feed.httpsUrl;
+      button.title = 'Abrir el calendario del dispositivo y suscribirse a las tareas';
+      button.dataset.httpsUrl = feed.httpsUrl || '';
+    } catch (error) {
+      // El enlace .ics sigue funcionando si el feed no está disponible.
+      console.warn('No se pudo preparar la suscripción de calendario:', error.message);
+    }
+  }
+
   async function handleToggleTask(taskId) {
     try {
       const res = await requestJson(`/api/business/tasks/${taskId}/toggle`, { method: 'POST' });
@@ -895,5 +912,7 @@
     window.addEventListener('nora:dashboard-loaded', () => {
       void refreshWorkspace();
     });
+
+    void setupCalendarFeed();
   });
 })();

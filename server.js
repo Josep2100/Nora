@@ -560,15 +560,52 @@ function generateTasksIcs(tasks, companyName = 'Nora Business') {
   return lines.join('\r\n');
 }
 
+async function sendCalendarFeed(res, user) {
+  const tasks = await storage.getTasks(user.id);
+  const companyName = user.companyName || user.company_name || 'Mi Empresa';
+  const icsContent = generateTasksIcs(tasks, companyName);
+
+  res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Content-Disposition', `inline; filename="nora-tareas-${encodeURIComponent(companyName)}.ics"`);
+  return res.send(icsContent);
+}
+
+// Feed público protegido por un token aleatorio. Las apps de calendario
+// consultan esta URL periódicamente y reciben las tareas nuevas automáticamente.
+app.get('/calendar/feed/:token.ics', async (req, res) => {
+  try {
+    const user = await storage.getUserByCalendarToken(req.params.token);
+    if (!user) return res.status(404).send('Calendario no encontrado');
+    return sendCalendarFeed(res, user);
+  } catch (error) {
+    console.error('Error sirviendo feed de calendario:', error);
+    return res.status(500).send('Error del calendario');
+  }
+});
+
+app.get('/api/business/calendar/feed', ensureAuthenticated, async (req, res) => {
+  try {
+    const token = await storage.getOrCreateCalendarToken(req.user.id);
+    if (!token) return res.status(404).json({ error: 'No se pudo preparar el calendario' });
+
+    const configuredBase = String(process.env.PUBLIC_APP_URL || '').trim().replace(/\/$/, '');
+    const baseUrl = configuredBase || `${req.protocol}://${req.get('host')}`;
+    const httpsUrl = `${baseUrl}/calendar/feed/${encodeURIComponent(token)}.ics`;
+    return res.json({
+      httpsUrl,
+      webcalUrl: httpsUrl.replace(/^https?:/i, 'webcal:'),
+      message: 'Suscriba esta URL en su calendario. Las nuevas tareas aparecerán cuando su aplicación actualice el calendario.'
+    });
+  } catch (error) {
+    console.error('Error preparando feed de calendario:', error);
+    return res.status(500).json({ error: 'No se pudo preparar la sincronización' });
+  }
+});
+
 app.get('/api/business/calendar/tasks.ics', ensureAuthenticated, async (req, res) => {
   try {
-    const tasks = await storage.getTasks(req.user.id);
-    const companyName = req.user.companyName || req.user.company_name || 'Mi Empresa';
-    const icsContent = generateTasksIcs(tasks, companyName);
-
-    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="nora-tareas-${encodeURIComponent(companyName)}.ics"`);
-    return res.send(icsContent);
+    return sendCalendarFeed(res, req.user);
   } catch (error) {
     console.error('Error generando calendario ICS:', error);
     return res.status(500).json({ error: 'Error al generar el calendario' });
