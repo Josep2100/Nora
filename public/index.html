@@ -13,6 +13,24 @@
 <body>
   <div id="toast" class="toast" role="status"></div>
 
+  <div id="onboardingModal" class="modal hidden tutorial-modal" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+    <div class="modal-card tutorial-card">
+      <div class="tutorial-progress"><span id="tutorialProgressBar"></span></div>
+      <span class="eyebrow">PRIMEROS PASOS</span>
+      <h3 id="tutorialTitle">Bienvenido a Claryvo</h3>
+      <p id="tutorialText" class="modal-desc"></p>
+      <div class="tutorial-steps">
+        <div class="tutorial-step" data-tutorial-step="0"><div class="tutorial-icon">✦</div><strong>Pregunta a la IA</strong><p>Consulta tus documentos y procedimientos con lenguaje natural.</p></div>
+        <div class="tutorial-step hidden" data-tutorial-step="1"><div class="tutorial-icon">✓</div><strong>Convierte información en tareas</strong><p>Crea tareas con fecha, prioridad y detalles para pasar de la idea a la acción.</p></div>
+        <div class="tutorial-step hidden" data-tutorial-step="2"><div class="tutorial-icon">📅</div><strong>Sincroniza tu calendario</strong><p>Conecta Google Calendar u Outlook una vez. Las nuevas tareas con fecha se añadirán automáticamente.</p></div>
+      </div>
+      <div class="modal-actions">
+        <button id="skipTutorialBtn" type="button" class="secondary-btn">Omitir</button>
+        <button id="nextTutorialBtn" type="button" class="primary-btn">Siguiente <span>→</span></button>
+      </div>
+    </div>
+  </div>
+
   <section id="authScreen" class="auth-shell">
     <div class="auth-visual">
       <div class="visual-glow glow-one"></div>

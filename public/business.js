@@ -702,6 +702,38 @@
     modal.classList.add('hidden');
   }
 
+  let tutorialStep = 0;
+  const tutorialCopy = [
+    ['Bienvenido a Claryvo', 'Tu espacio inteligente para consultar, organizar y actuar.'],
+    ['Todo claro, todo accionable', 'Guarda el conocimiento de tu empresa y conviértelo en tareas.'],
+    ['Tu calendario, siempre al día', 'Conecta Google Calendar u Outlook y deja que Claryvo haga el resto.']
+  ];
+
+  async function finishTutorial() {
+    closeModal(document.getElementById('onboardingModal'));
+    await requestJson('/api/onboarding/complete', { method: 'POST' }).catch(() => {});
+  }
+
+  function renderTutorialStep() {
+    const copy = tutorialCopy[tutorialStep];
+    document.querySelectorAll('[data-tutorial-step]').forEach((node, index) => node.classList.toggle('hidden', index !== tutorialStep));
+    const title = document.getElementById('tutorialTitle');
+    const text = document.getElementById('tutorialText');
+    const progress = document.getElementById('tutorialProgressBar');
+    const next = document.getElementById('nextTutorialBtn');
+    if (title) title.textContent = copy[0];
+    if (text) text.textContent = copy[1];
+    if (progress) progress.style.width = `${((tutorialStep + 1) / tutorialCopy.length) * 100}%`;
+    if (next) next.innerHTML = tutorialStep === tutorialCopy.length - 1 ? 'Empezar <span>→</span>' : 'Siguiente <span>→</span>';
+  }
+
+  function maybeShowTutorial(user) {
+    if (!user || user.onboardingCompleted === true) return;
+    tutorialStep = 0;
+    renderTutorialStep();
+    document.getElementById('onboardingModal')?.classList.remove('hidden');
+  }
+
   function setFormLoading(form, loading, label) {
     const button = form.querySelector('button[type="submit"]');
     if (!button) return;
@@ -954,6 +986,12 @@
 
     window.addEventListener('nora:dashboard-loaded', () => {
       void refreshWorkspace();
+    });
+    window.addEventListener('nora:dashboard-loaded', event => maybeShowTutorial(event.detail?.user));
+    document.getElementById('skipTutorialBtn')?.addEventListener('click', () => { void finishTutorial(); });
+    document.getElementById('nextTutorialBtn')?.addEventListener('click', () => {
+      if (tutorialStep >= tutorialCopy.length - 1) void finishTutorial();
+      else { tutorialStep += 1; renderTutorialStep(); }
     });
 
     void setupCalendarFeed();

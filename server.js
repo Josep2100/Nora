@@ -361,7 +361,8 @@ app.post('/api/auth/login', (req, res, next) => {
           id: user.id,
           email: user.email,
           name: user.name || user.email,
-          companyName: user.companyName || user.company_name || 'Mi empresa'
+          companyName: user.companyName || user.company_name || 'Mi empresa',
+          onboardingCompleted: user.onboardingCompleted === true
         }
       });
     });
@@ -418,7 +419,8 @@ app.post('/api/auth/signup', async (req, res, next) => {
           id: user.id,
           email: user.email,
           name: user.name || user.email,
-          companyName: user.companyName || user.company_name || normalizedCompanyName
+          companyName: user.companyName || user.company_name || normalizedCompanyName,
+          onboardingCompleted: user.onboardingCompleted === true
         }
       });
     });
@@ -462,6 +464,16 @@ app.post('/api/auth/logout', (req, res, next) => {
   });
 });
 
+app.post('/api/onboarding/complete', ensureAuthenticated, async (req, res) => {
+  try {
+    await storage.completeOnboarding(req.user.id);
+    return res.json({ completed: true });
+  } catch (error) {
+    console.error('Error guardando el tutorial:', error);
+    return res.status(500).json({ error: 'No se pudo guardar el estado del tutorial.' });
+  }
+});
+
 app.get('/api/auth/me', (req, res) => {
   if (req.isAuthenticated && req.isAuthenticated()) {
     return res.json({
@@ -469,7 +481,8 @@ app.get('/api/auth/me', (req, res) => {
         id: req.user.id,
         email: req.user.email,
         name: req.user.name || req.user.email,
-        companyName: req.user.companyName || req.user.company_name || 'Mi empresa'
+        companyName: req.user.companyName || req.user.company_name || 'Mi empresa',
+        onboardingCompleted: req.user.onboardingCompleted === true
       }
     });
   }

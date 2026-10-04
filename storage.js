@@ -229,12 +229,22 @@ async function createUser({ name, companyName, email, passwordHash, password }) 
     knowledge: [],
     memory: [],
     team: [],
-    activity: []
+    activity: [],
+    onboardingCompleted: false
   };
 
   users.push(user);
   await saveUsers(users);
   return user;
+}
+
+async function completeOnboarding(userId) {
+  const users = loadUsers();
+  const index = users.findIndex(user => String(user.id) === String(userId));
+  if (index < 0) return null;
+  users[index].onboardingCompleted = true;
+  await saveUsers(users);
+  return users[index];
 }
 
 async function getTasks(userId) {
@@ -464,6 +474,7 @@ module.exports = {
   getUserByCalendarToken,
   getOrCreateCalendarToken,
   createUser,
+  completeOnboarding,
   updateUserPassword,
   getTasks,
   saveTask,
